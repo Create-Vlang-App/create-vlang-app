@@ -18,7 +18,7 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: vlang/setup-v@12a9fab625c7fd9e51972eef71c84c3d4f41c45c
         with:
           version-file: .v-version

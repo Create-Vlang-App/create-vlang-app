@@ -25,7 +25,7 @@ jobs:
     name: V install / binary
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: vlang/setup-v@86491f8df5313918daebeea16f187fa28c223edd
         with:
           version-file: .v-version
