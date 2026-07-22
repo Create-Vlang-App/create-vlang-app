@@ -1,5 +1,10 @@
 # create-vlang-app
 
+[![CI](https://img.shields.io/badge/CI-pending-lightgrey?style=flat-square)](https://github.com/Create-Vlang-App/create-vlang-app/actions)
+[![V](https://img.shields.io/badge/V-0.5%2B-4B6EAF?style=flat-square)](https://vlang.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![VPM](https://img.shields.io/badge/vpm-create--vlang--app-blue?style=flat-square)](https://github.com/Create-Vlang-App/create-vlang-app)
+
 V-native scaffolding CLI for the [V programming language](https://vlang.io) — parity with [Create Node App](https://github.com/Create-Node-App/create-node-app) and [Create Python App](https://github.com/Create-Python-App/create-python-app).
 
 ```bash
