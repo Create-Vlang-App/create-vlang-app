@@ -4,11 +4,35 @@
 
 | Channel | Workflow | Secret(s) |
 |---------|----------|-----------|
-| **VPM** | Manual registry + `v install` | (none — public GitHub) |
+| **curl\|sh** | `scripts/install.sh` (+ site mirror `website/public/install.sh`) | (none — public GitHub Releases) |
 | **GitHub Releases** | `publish.yml` (Release) | `GITHUB_TOKEN` (default) |
+| **VPM** | Manual registry + `v install` (when registered) | (none — public GitHub) |
 | **Docker** | `publish-docker.yml` (after Release) | `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN` |
 | **AUR** | `publish-aur.yml` (after Release) | `AUR_SSH_PRIVATE_KEY`, `AUR_REPO_TOKEN` |
 | **Homebrew** | `notify-homebrew.yml` → `homebrew-tap` | `HOMEBREW_TAP_TOKEN` |
+
+## curl|sh (interim primary for end users)
+
+Canonical script: [`scripts/install.sh`](../scripts/install.sh).
+
+Public hero URL (keep in sync with the repo script):
+
+```bash
+curl -fsSL https://create-awesome-vlang-app.vercel.app/install.sh | sh
+```
+
+Fallback:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Create-Vlang-App/create-vlang-app/main/scripts/install.sh | sh
+```
+
+The installer resolves the latest `create-vlang-app@*` Release, verifies `SHA256SUMS`,
+installs into `~/.local/bin` (override with `CVA_INSTALL_DIR`), and symlinks
+`create-awesome-vlang-app` → `create-vlang-app`. Pin with `CVA_VERSION=0.1.0`.
+
+When editing `scripts/install.sh`, copy the same bytes to
+`Create-Vlang-App/website/public/install.sh` in the same change set.
 
 Configure secrets under **Settings → Environments → `release` → Environment secrets**
 (not repository Action secrets). Docker, AUR, and Homebrew jobs use `environment: release`.
@@ -21,7 +45,7 @@ See also:
 - [VPM_PUBLISH.md](VPM_PUBLISH.md) — primary install path
 - [AUR_PUBLISH.md](AUR_PUBLISH.md) — AUR automation details
 
-## VPM (primary)
+## VPM (when registered)
 
 Register modules at [vpm.vlang.io/new](https://vpm.vlang.io/new):
 

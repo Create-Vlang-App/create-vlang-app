@@ -26,20 +26,43 @@ One command. Any V stack.
 
 ## Quick start
 
-### From Release (recommended)
+### Install (recommended)
 
-Download the linux amd64 binary from [`create-vlang-app@0.1.0`](https://github.com/Create-Vlang-App/create-vlang-app/releases/tag/create-vlang-app%400.1.0):
+```bash
+curl -fsSL https://create-awesome-vlang-app.vercel.app/install.sh | sh
+# or
+wget -qO- https://create-awesome-vlang-app.vercel.app/install.sh | sh
+```
+
+Installs `create-vlang-app` and a `create-awesome-vlang-app` alias into `~/.local/bin`
+(override with `CVA_INSTALL_DIR`). Pin a version with `CVA_VERSION=0.1.0`.
+
+Then scaffold:
+
+```bash
+create-vlang-app my-app --template web-server --addons github-setup
+# or
+create-awesome-vlang-app my-app --template web-server --addons github-setup
+```
+
+Fallback (raw script from this repo):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Create-Vlang-App/create-vlang-app/main/scripts/install.sh | sh
+```
+
+### Manual / pin a Release asset
+
+Download a specific platform binary from [`create-vlang-app@0.1.0`](https://github.com/Create-Vlang-App/create-vlang-app/releases/tag/create-vlang-app%400.1.0):
 
 ```bash
 curl -fsSL -o create-vlang-app \
   "https://github.com/Create-Vlang-App/create-vlang-app/releases/download/create-vlang-app%400.1.0/create-vlang-app-linux-x86_64"
 chmod +x create-vlang-app
-sudo mv create-vlang-app /usr/local/bin/
-
-create-vlang-app my-app --template web-server --addons github-setup
+mv create-vlang-app ~/.local/bin/
 ```
 
-Or install via [Homebrew](https://github.com/Create-Vlang-App/homebrew-tap) / [AUR](https://aur.archlinux.org/packages/create-vlang-app).
+Also available via [Homebrew](https://github.com/Create-Vlang-App/homebrew-tap) (`brew tap Create-Vlang-App/tap && brew install create-vlang-app`) and [AUR](https://aur.archlinux.org/packages/create-vlang-app).
 
 ### Build from source
 

@@ -20,3 +20,15 @@ git push origin create-vlang-app@0.1.0
 
 Primary install for CI and bank L1–L3: **linux amd64 Release binary**.
 See `.github/workflows/publish.yml` matrix `optional` flags.
+
+## curl|sh installer
+
+User-facing installer: [`scripts/install.sh`](../scripts/install.sh) (mirrored at
+`https://create-awesome-vlang-app.vercel.app/install.sh`).
+
+Every `create-vlang-app@*` Release **must** publish:
+
+1. At least `create-vlang-app-linux-x86_64` (required)
+2. `SHA256SUMS` covering uploaded assets (required for installer verification)
+
+Optional platform assets enable the same oneliner on those hosts when present.
