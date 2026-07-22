@@ -1,7 +1,9 @@
 name: MegaLinter
 on:
-  push: { branches: [main] }
-  pull_request: { branches: [main] }
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -10,11 +12,12 @@ permissions:
 jobs:
   megalinter:
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     steps:
-      - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: oxsecurity/megalinter/flavors/cupcake@v8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLY_FIXES: none
-        continue-on-error: true

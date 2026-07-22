@@ -7,9 +7,7 @@ pub fn copy_tree(src string, dst string) ! {
 		return error(new_error(code_install, 'not a directory: ${src}').msg())
 	}
 	os.mkdir_all(dst) or {}
-	entries := os.ls(src) or {
-		return error(new_error(code_install, 'ls failed: ${src}').msg())
-	}
+	entries := os.ls(src) or { return error(new_error(code_install, 'ls failed: ${src}').msg()) }
 	for name in entries {
 		if name in ['.git', '.vmodules'] {
 			continue
@@ -20,10 +18,24 @@ pub fn copy_tree(src string, dst string) ! {
 			copy_tree(from, to)!
 		} else {
 			os.mkdir_all(os.dir(to)) or {}
-			os.cp(from, to) or {
-				return error(new_error(code_install, 'copy failed ${from}: ${err}').msg())
-			}
+			copy_file_optimized(from, to)!
 		}
+	}
+}
+
+fn copy_file_optimized(from string, to string) ! {
+	// Prefer cp --reflink=auto when available (btrfs/xfs/zfs/apfs via GNU/BSD cp)
+	res := os.execute('cp --reflink=auto -f "${from}" "${to}"')
+	if res.exit_code == 0 && os.exists(to) {
+		return
+	}
+	// Hardlink fallback (same filesystem)
+	os.rm(to) or {}
+	os.link(from, to) or {
+		os.cp(from, to) or {
+			return error(new_error(code_install, 'copy failed ${from}: ${err}').msg())
+		}
+		return
 	}
 }
 
@@ -31,7 +43,7 @@ pub fn merge_layers(layers []string, dest string) ! {
 	os.mkdir_all(dest) or {}
 	for layer in layers {
 		src := ResolvedSource{
-			kind: 'file'
+			kind:       'file'
 			local_path: layer
 		}
 		root := get_template_dir_path(src, layer)

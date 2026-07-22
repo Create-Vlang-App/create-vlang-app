@@ -25,7 +25,7 @@ jobs:
     name: V install / binary
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: vlang/setup-v@86491f8df5313918daebeea16f187fa28c223edd
         with:
           version-file: .v-version
@@ -97,9 +97,20 @@ jobs:
       - name: Summarize channel versions
         run: |
           set -euo pipefail
-          MODULE=$(curl -sfL https://api.github.com/repos/Create-Vlang-App/create-vlang-app/releases/latest | python3 -c "import json,sys; r=json.load(sys.stdin); print(r.get('tag_name','missing').replace('create-vlang-app@',''))" || echo unavailable)
-          FORMULA=$(curl -sfL https://raw.githubusercontent.com/Create-Vlang-App/homebrew-tap/main/Formula/create-vlang-app.rb | grep -oE 'version "[0-9]+\.[0-9]+\.[0-9]+"' | head -1 || echo unavailable)
-          AUR=$(curl -sfL https://aur.archlinux.org/rpc/v5/info?arg=create-vlang-app | python3 -c "import json,sys; d=json.load(sys.stdin); r=d.get('results') or []; print(r[0]['Version'].split('-')[0] if r else 'unavailable')" || echo unavailable)
+          REL_API=https://api.github.com/repos/Create-Vlang-App/create-vlang-app/releases/latest
+          BREW_RAW=https://raw.githubusercontent.com/Create-Vlang-App/homebrew-tap/main/Formula/create-vlang-app.rb
+          AUR_RPC='https://aur.archlinux.org/rpc/v5/info?arg=create-vlang-app'
+          MODULE=$(curl -sfL "$REL_API" | python3 -c \
+            "import json,sys; r=json.load(sys.stdin); print(r.get('tag_name','missing').replace('create-vlang-app@',''))" \
+            || echo unavailable)
+          FORMULA=$(curl -sfL "$BREW_RAW" | grep -oE 'version "[0-9]+\.[0-9]+\.[0-9]+"' | head -1 \
+            || echo unavailable)
+          AUR=$(curl -sfL "$AUR_RPC" | python3 -c "
+          import json,sys
+          d=json.load(sys.stdin)
+          r=d.get('results') or []
+          print(r[0]['Version'].split('-')[0] if r else 'unavailable')
+          " || echo unavailable)
           {
             echo "## Distribution smoke versions"
             echo "| Channel | Version |"

@@ -12,7 +12,7 @@ pub fn (e CvaError) msg() string {
 
 pub fn new_error(code string, message string) CvaError {
 	return CvaError{
-		code: code
+		code:    code
 		message: message
 	}
 }

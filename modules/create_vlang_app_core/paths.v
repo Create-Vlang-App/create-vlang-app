@@ -63,10 +63,10 @@ pub fn resolve_source(spec string) ResolvedSource {
 			path = '/' + spec.all_after('file:///').all_before('?')
 		}
 		return ResolvedSource{
-			kind: 'file'
-			url: spec
-			ref: parse_ref(spec)
-			subdir: query_param(spec, 'subdir')
+			kind:       'file'
+			url:        spec
+			ref:        parse_ref(spec)
+			subdir:     query_param(spec, 'subdir')
 			local_path: path
 		}
 	}
@@ -78,16 +78,16 @@ pub fn resolve_source(spec string) ResolvedSource {
 			kind = 'github'
 		}
 		return ResolvedSource{
-			kind: kind
-			url: base
-			ref: parse_ref(spec)
+			kind:   kind
+			url:    base
+			ref:    parse_ref(spec)
 			subdir: query_param(spec, 'subdir')
 		}
 	}
 
 	return ResolvedSource{
 		kind: 'slug'
-		url: spec
+		url:  spec
 	}
 }
 

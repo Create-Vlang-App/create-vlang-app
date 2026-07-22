@@ -29,6 +29,6 @@ make build
 
 ## References
 
-- Roadmap: https://github.com/Create-Vlang-App/create-vlang-app/issues/1
+- Roadmap: <https://github.com/Create-Vlang-App/create-vlang-app/issues/1>
 - Parity matrix (workspace): `knowledge/create-vlang-app-parity-matrix.md`
 - Process: `knowledge/processes/create-vlang-app-maintenance.md`

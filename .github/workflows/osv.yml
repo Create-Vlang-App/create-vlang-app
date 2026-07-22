@@ -1,7 +1,9 @@
 name: OSV
 on:
-  push: { branches: [main] }
-  pull_request: { branches: [main] }
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   schedule: [{ cron: "0 6 * * 1" }]
   workflow_dispatch:
 permissions:
@@ -10,11 +12,11 @@ permissions:
 jobs:
   osv:
     runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: google/osv-scanner-action/osv-scanner-action@v2.0.1
         with:
           scan-args: |-
             --recursive
             ./
-        continue-on-error: true
