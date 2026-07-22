@@ -1,0 +1,116 @@
+name: Publish Docker image
+
+# Optional container distribution. Runs after Release succeeds, or manually.
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Package version (e.g. 0.0.1)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  docker:
+    name: Build and push Docker image
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'create-vlang-app@'))
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Resolve version
+        id: version
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          RUN_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -euo pipefail
+          if [ -n "${INPUT_VERSION:-}" ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            VERSION="${RUN_BRANCH#create-vlang-app@}"
+          fi
+          if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([a-zA-Z0-9.-]+)?$'; then
+            echo "::error::Invalid Docker image version: $VERSION"
+            exit 1
+          fi
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          {
+            echo "version=$VERSION"
+            echo "major=$MAJOR"
+            echo "minor=$MINOR"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Wait for GitHub Release tarball
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="create-vlang-app@${VERSION}"
+          URL="https://github.com/Create-Vlang-App/create-vlang-app/archive/refs/tags/${TAG}.tar.gz"
+          for attempt in $(seq 1 24); do
+            if curl -sfI "$URL" >/dev/null; then
+              echo "Release source ready: $URL"
+              exit 0
+            fi
+            echo "::warning::Release tarball not ready (attempt ${attempt}/24); retrying in 15s"
+            sleep 15
+          done
+          echo "::error::Timed out waiting for $URL"
+          exit 1
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: linux/arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ulisesjeremias/create-vlang-app
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ steps.version.outputs.version }}
+            type=raw,value=${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}
+            type=raw,value=v${{ steps.version.outputs.major }}
+          labels: |
+            org.opencontainers.image.title=create-vlang-app
+            org.opencontainers.image.description=V-native scaffolding CLI for the V programming language
+            org.opencontainers.image.url=https://github.com/Create-Vlang-App/create-vlang-app
+            org.opencontainers.image.source=https://github.com/Create-Vlang-App/create-vlang-app
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.version.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
