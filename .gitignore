@@ -18,9 +18,6 @@ modules/**/create_vlang_app
 # OS / editors
 .DS_Store
 .idea/
-.vscode/*
-!.vscode/settings.json
-!.vscode/extensions.json
 *.swp
 *~
 
@@ -38,3 +35,8 @@ coverage/
 
 # Local V module path for monorepo builds
 .vmodules/
+
+# Editors — track shared VS Code settings only
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
