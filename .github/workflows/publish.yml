@@ -1,0 +1,130 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "create-vlang-app@*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build (create-vlang-app@X.Y.Z). Defaults to ref when empty."
+        required: false
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  verify:
+    name: Verify version alignment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve tag
+        id: tag
+        run: |
+          set -euo pipefail
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            echo "::error::No tag provided" >&2
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#create-vlang-app@}" >> "$GITHUB_OUTPUT"
+      - name: Check semver sync
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: ./scripts/check-version-sync.sh "${{ steps.tag.outputs.version }}"
+
+  build:
+    name: Build ${{ matrix.asset }}
+    needs: verify
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            os: linux
+            arch: amd64
+            asset: create-vlang-app-linux-x86_64
+            ext: ""
+          - runner: ubuntu-latest
+            os: linux
+            arch: arm64
+            asset: create-vlang-app-linux-aarch64
+            ext: ""
+          - runner: macos-latest
+            os: macos
+            arch: arm64
+            asset: create-vlang-app-darwin-aarch64
+            ext: ""
+          - runner: macos-13
+            os: macos
+            arch: amd64
+            asset: create-vlang-app-darwin-x86_64
+            ext: ""
+          - runner: ubuntu-latest
+            os: windows
+            arch: amd64
+            asset: create-vlang-app-windows-x86_64
+            ext: .exe
+    steps:
+      - uses: actions/checkout@v4
+      - uses: vlang/setup-v@86491f8df5313918daebeea16f187fa28c223edd
+        with:
+          version-file: .v-version
+      - name: Build binary
+        shell: bash
+        run: |
+          set -euo pipefail
+          make ensure-vmodules
+          OUT="dist/${{ matrix.asset }}${{ matrix.ext }}"
+          mkdir -p dist
+          cd modules/create_vlang_app
+          VMODULES="$GITHUB_WORKSPACE/.vmodules" v -prod \
+            -os "${{ matrix.os }}" \
+            -arch "${{ matrix.arch }}" \
+            -o "$GITHUB_WORKSPACE/$OUT" .
+          ls -la "$GITHUB_WORKSPACE/dist"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: dist/${{ matrix.asset }}${{ matrix.ext }}
+
+  release:
+    name: Upload GitHub Release assets
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Write checksums
+        working-directory: dist
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(create-vlang-app-*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No release artifacts found" >&2
+            exit 1
+          fi
+          sha256sum "${files[@]}" > SHA256SUMS
+          cat SHA256SUMS
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/create-vlang-app-*
+            dist/SHA256SUMS
+          generate_release_notes: true
