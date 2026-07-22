@@ -76,11 +76,17 @@ fn main() {
 	_ = verbose
 	_ = use_interactive
 
-	if project == '' || template_spec == '' {
-		if use_interactive && project == '' {
-			eprintln('interactive wizard not fully implemented; pass project dir and --template')
-			exit(2)
+	mut project_dir := project
+	mut tmpl := template_spec
+	if use_interactive {
+		if project_dir == '' {
+			project_dir = os.input('Project directory: ').trim_space()
 		}
+		if tmpl == '' {
+			tmpl = os.input('Template (URL|file://|slug): ').trim_space()
+		}
+	}
+	if project_dir == '' || tmpl == '' {
 		eprintln('usage: create-vlang-app <project-directory> --template <spec> [--addons <spec>] [--no-interactive]')
 		exit(2)
 	}
@@ -103,8 +109,8 @@ fn main() {
 	}
 
 	opts := core.ScaffoldOptions{
-		project_dir: project
-		template_spec: template_spec
+		project_dir: project_dir
+		template_spec: tmpl
 		addon_specs: addons
 		no_install: no_install
 		force: force
