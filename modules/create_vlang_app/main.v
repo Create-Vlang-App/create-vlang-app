@@ -143,10 +143,10 @@ fn main() {
 	}
 
 	core.scaffold(opts) or {
-		eprintln(err)
+		eprintln(error_msg(err.str()))
 		exit(1)
 	}
-	println('Scaffolded ${project}')
+	println(success_msg(project_dir))
 }
 
 fn apply_env(offline bool, no_cache bool, cache_dir string, refresh string, strict bool) {
