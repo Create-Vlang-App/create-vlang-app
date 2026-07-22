@@ -11,6 +11,7 @@ One command. Any V stack.
 [![Release](https://img.shields.io/github/v/release/Create-Vlang-App/create-vlang-app?filter=create-vlang-app%40*&style=flat-square&label=Release)](https://github.com/Create-Vlang-App/create-vlang-app/releases/tag/create-vlang-app%400.1.0)
 [![V](https://img.shields.io/badge/V-0.5.2-4B6EAF?style=flat-square)](https://vlang.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![Discord](https://img.shields.io/discord/1527933660764831825?style=flat-square&label=Discord&logo=discord&logoColor=white)](https://discord.gg/dwFTsR7fK2)
 
 [Templates](https://github.com/Create-Vlang-App/cva-templates) · [Website](https://github.com/Create-Vlang-App/website) · [Contributing](CONTRIBUTING.md) · [Releases](https://github.com/Create-Vlang-App/create-vlang-app/releases)
 
