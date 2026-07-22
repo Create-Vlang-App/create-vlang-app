@@ -105,9 +105,12 @@ jobs:
             || echo unavailable)
           FORMULA=$(curl -sfL "$BREW_RAW" | grep -oE 'version "[0-9]+\.[0-9]+\.[0-9]+"' | head -1 \
             || echo unavailable)
-          AUR=$(curl -sfL "$AUR_RPC" | python3 -c \
-            "import json,sys; d=json.load(sys.stdin); r=d.get('results') or []; print(r[0]['Version'].split('-')[0] if r else 'unavailable')" \
-            || echo unavailable)
+          AUR=$(curl -sfL "$AUR_RPC" | python3 -c "
+          import json,sys
+          d=json.load(sys.stdin)
+          r=d.get('results') or []
+          print(r[0]['Version'].split('-')[0] if r else 'unavailable')
+          " || echo unavailable)
           {
             echo "## Distribution smoke versions"
             echo "| Channel | Version |"

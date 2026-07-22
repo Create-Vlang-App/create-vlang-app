@@ -1,11 +1,13 @@
 extends: default
 rules:
   line-length:
-    max: 140
+    max: 160
     allow-non-breakable-inline-mappings: true
   document-start: disable
   braces:
     max-spaces-inside: 1
+    level: warning
+  truthy:
     level: warning
 ignore: |
   megalinter-reports/

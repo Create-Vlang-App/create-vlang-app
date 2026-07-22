@@ -15,6 +15,4 @@ jobs:
       - uses: ludeeus/action-shellcheck@2.0.0
         with:
           scandir: "."
-          ignore_paths: >-
-            completions/create-vlang-app.zsh
-            completions/create-vlang-app.fish
+          ignore_names: create-vlang-app.zsh create-vlang-app.fish
