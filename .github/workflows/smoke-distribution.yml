@@ -66,27 +66,40 @@ jobs:
   aur:
     name: AUR (archlinux container)
     runs-on: ubuntu-latest
-    container:
-      image: archlinux:latest
     steps:
-      - name: Bootstrap Arch builder
+      - uses: actions/checkout@v7
+      - id: setup-v
+        uses: vlang/setup-v@12a9fab625c7fd9e51972eef71c84c3d4f41c45c
+        with:
+          version-file: .v-version
+          cache: true
+      # Never install V from the AUR `vlang` package (stale). Reuse setup-v like the rest of CI.
+      - name: Build AUR package with setup-v toolchain
+        env:
+          V_BIN_PATH: ${{ steps.setup-v.outputs.bin-path }}
         run: |
-          pacman -Sy --noconfirm --needed base-devel vlang git sudo
-          useradd -m -G wheel builder
-          echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
-      - name: Build from GitHub mirror
-        run: |
-          su builder -c '
-            set -euo pipefail
-            if git clone https://aur.archlinux.org/create-vlang-app.git /tmp/cva 2>/dev/null; then
-              cd /tmp/cva
-            else
-              git clone https://github.com/Create-Vlang-App/aur-package.git /tmp/cva
-              cd /tmp/cva
-            fi
-            makepkg -si --noconfirm
-            create-vlang-app --version | grep -qE "[0-9]+\\.[0-9]+\\.[0-9]+"
-          '
+          set -euo pipefail
+          test -n "$V_BIN_PATH"
+          test -x "$V_BIN_PATH/v"
+          docker run --rm \
+            -v "$V_BIN_PATH:$V_BIN_PATH:ro" \
+            -e "PATH=${V_BIN_PATH}:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
+            archlinux:latest \
+            bash -euo pipefail -c '
+              pacman -Sy --noconfirm --needed base-devel git sudo
+              useradd -m -G wheel builder
+              echo "%wheel ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+              runuser -u builder -- env "PATH=$PATH" bash -euo pipefail -c "
+                if git clone https://aur.archlinux.org/create-vlang-app.git /tmp/cva 2>/dev/null; then
+                  cd /tmp/cva
+                else
+                  git clone https://github.com/Create-Vlang-App/aur-package.git /tmp/cva
+                  cd /tmp/cva
+                fi
+                makepkg -d -si --noconfirm --skippgpcheck
+                create-vlang-app --version | grep -qE \"[0-9]+\\.[0-9]+\\.[0-9]+\"
+              "
+            '
 
   versions:
     name: Cross-check published versions
