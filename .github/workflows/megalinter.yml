@@ -1,0 +1,20 @@
+name: MegaLinter
+on:
+  push: { branches: [main] }
+  pull_request: { branches: [main] }
+  workflow_dispatch:
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+jobs:
+  megalinter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: oxsecurity/megalinter/flavors/cupcake@v8
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLY_FIXES: none
+        continue-on-error: true
