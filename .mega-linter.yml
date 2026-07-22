@@ -1,0 +1,26 @@
+# MegaLinter for create-vlang-app (V-first; many language linters disabled)
+APPLY_FIXES: none
+SHOW_ELAPSED_TIME: true
+PRINT_ALPACA: false
+ENABLE_LINTERS:
+  - MARKDOWN_MARKDOWNLINT
+  - YAML_YAMLLINT
+  - REPOSITORY_GITLEAKS
+  - REPOSITORY_GIT_DIFF
+DISABLE:
+  - SPELL
+  - CSS
+  - JAVASCRIPT
+  - TYPESCRIPT
+  - PYTHON
+  - RUBY
+  - PHP
+  - JAVA
+  - KOTLIN
+  - GO
+  - RUST
+  - C
+  - CPP
+  - CSHARP
+  - DOCKERFILE
+FILTER_REGEX_EXCLUDE: (megalinter-reports/|\.vmodules/)
