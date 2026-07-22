@@ -19,3 +19,18 @@ See [docs/adr/0001-module-layout.md](docs/adr/0001-module-layout.md).
 ## License
 
 MIT (forthcoming).
+
+## Toolchain
+
+This repository pins the V compiler via [`.v-version`](.v-version).
+
+CI should use [`vlang/setup-v`](https://github.com/vlang/setup-v) with:
+
+```yaml
+- uses: vlang/setup-v@v1
+  with:
+    version-file: .v-version
+    cache: true
+```
+
+Locally: install a matching V (`v version`) or run `v up` and verify compatibility.
