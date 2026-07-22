@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="./assets/repo-hero.svg" alt="Create Vlang App hero banner" width="100%" />
+
 # Create Vlang App
 
 **V-native scaffolding CLI — compose templates and extensions into production-ready V projects.**
@@ -11,9 +13,12 @@ One command. Any V stack.
 [![Release](https://img.shields.io/github/v/release/Create-Vlang-App/create-vlang-app?filter=create-vlang-app%40*&style=flat-square&label=Release)](https://github.com/Create-Vlang-App/create-vlang-app/releases/tag/create-vlang-app%400.1.0)
 [![V](https://img.shields.io/badge/V-0.5.2-4B6EAF?style=flat-square)](https://vlang.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![Website](https://img.shields.io/badge/site-create--awesome--vlang--app.vercel.app-8B5CF6?style=flat-square)](https://create-awesome-vlang-app.vercel.app)
+[![AUR](https://img.shields.io/aur/version/create-vlang-app?style=flat-square&label=AUR&logo=archlinux)](https://aur.archlinux.org/packages/create-vlang-app)
+[![Homebrew](https://img.shields.io/badge/homebrew-Create--Vlang--App%2Ftap-orange?style=flat-square&logo=homebrew)](https://github.com/Create-Vlang-App/homebrew-tap)
 [![Discord](https://img.shields.io/discord/1527933660764831825?style=flat-square&label=Discord&logo=discord&logoColor=white)](https://discord.gg/dwFTsR7fK2)
 
-[Templates](https://github.com/Create-Vlang-App/cva-templates) · [Website](https://github.com/Create-Vlang-App/website) · [Contributing](CONTRIBUTING.md) · [Releases](https://github.com/Create-Vlang-App/create-vlang-app/releases)
+[Official Site](https://create-awesome-vlang-app.vercel.app) · [Catalog](https://create-awesome-vlang-app.vercel.app/templates) · [Templates](https://github.com/Create-Vlang-App/cva-templates) · [Contributing](CONTRIBUTING.md) · [Releases](https://github.com/Create-Vlang-App/create-vlang-app/releases)
 
 </div>
 
@@ -33,6 +38,8 @@ sudo mv create-vlang-app /usr/local/bin/
 
 create-vlang-app my-app --template web-server --addons github-setup
 ```
+
+Or install via [Homebrew](https://github.com/Create-Vlang-App/homebrew-tap) / [AUR](https://aur.archlinux.org/packages/create-vlang-app).
 
 ### Build from source
 
@@ -61,6 +68,8 @@ create-vlang-app --list-templates
 create-vlang-app --list-addons
 ```
 
+Browse the live catalog at **[create-awesome-vlang-app.vercel.app/templates](https://create-awesome-vlang-app.vercel.app/templates)**.
+
 ## What this repo contains
 
 | Path | Purpose |
@@ -83,7 +92,7 @@ Override with `--catalog-path` or a fork for local testing (`file://` supported)
 |------------|------|
 | [create-vlang-app](https://github.com/Create-Vlang-App/create-vlang-app) (this repo) | CLI + core engine |
 | [cva-templates](https://github.com/Create-Vlang-App/cva-templates) | Official templates and extensions |
-| [website](https://github.com/Create-Vlang-App/website) | Docs / catalog UI |
+| [website](https://github.com/Create-Vlang-App/website) | Docs / catalog UI → [live site](https://create-awesome-vlang-app.vercel.app) |
 | [homebrew-tap](https://github.com/Create-Vlang-App/homebrew-tap) | Homebrew formula |
 | [aur-package](https://github.com/Create-Vlang-App/aur-package) | AUR PKGBUILD mirror |
 
