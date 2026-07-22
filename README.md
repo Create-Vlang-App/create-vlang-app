@@ -42,3 +42,7 @@ make build
 ## License
 
 [MIT](LICENSE)
+
+## Topics
+
+GitHub topics: `vlang`, `scaffolding`, `cli`, `vpm`, `hacktoberfest`.
