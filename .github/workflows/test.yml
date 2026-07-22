@@ -20,8 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # v1.7 lacks prebuilt installs; pin until v1.8 ships (setup-v#60).
-      - uses: vlang/setup-v@86491f8df5313918daebeea16f187fa28c223edd
+      - uses: vlang/setup-v@12a9fab625c7fd9e51972eef71c84c3d4f41c45c
         with:
           version-file: .v-version
       - name: Run tests
