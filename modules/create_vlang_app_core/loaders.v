@@ -20,10 +20,24 @@ pub fn copy_tree(src string, dst string) ! {
 			copy_tree(from, to)!
 		} else {
 			os.mkdir_all(os.dir(to)) or {}
-			os.cp(from, to) or {
-				return error(new_error(code_install, 'copy failed ${from}: ${err}').msg())
-			}
+			copy_file_optimized(from, to)!
 		}
+	}
+}
+
+fn copy_file_optimized(from string, to string) ! {
+	// Prefer cp --reflink=auto when available (btrfs/xfs/zfs/apfs via GNU/BSD cp)
+	res := os.execute('cp --reflink=auto -f "${from}" "${to}"')
+	if res.exit_code == 0 && os.exists(to) {
+		return
+	}
+	// Hardlink fallback (same filesystem)
+	os.rm(to) or {}
+	os.link(from, to) or {
+		os.cp(from, to) or {
+			return error(new_error(code_install, 'copy failed ${from}: ${err}').msg())
+		}
+		return
 	}
 }
 
