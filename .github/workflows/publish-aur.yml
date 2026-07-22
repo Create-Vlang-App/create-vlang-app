@@ -156,7 +156,7 @@ jobs:
           fi
 
       - name: Sync updated PKGBUILD to GitHub mirror
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           repository: aur-package
           commit_message: "chore: sync PKGBUILD for v${{ steps.version.outputs.version }}"
