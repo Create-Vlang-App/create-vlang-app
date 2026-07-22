@@ -10,10 +10,6 @@
 *.tmp.c
 *.tmp.js
 *.dSYM/
-modules/**/create-vlang-app
-modules/**/create_vlang_app
-/create-vlang-app
-/create_vlang_app
 
 # OS / editors
 .DS_Store
@@ -40,3 +36,7 @@ coverage/
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
+
+# Built binaries (repo root)
+/create-vlang-app
+/create-vlang-app.exe
