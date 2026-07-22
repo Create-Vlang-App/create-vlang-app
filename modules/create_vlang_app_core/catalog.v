@@ -102,26 +102,26 @@ fn expand_relative_file_urls(cat CatalogFile, repo_root string) CatalogFile {
 	mut templates := []CatalogEntry{}
 	for t in cat.templates {
 		templates << CatalogEntry{
-			name: t.name
+			name:        t.name
 			description: t.description
-			url: expand_file_url(t.url, repo_root)
-			kind: t.kind
-			tags: t.tags
+			url:         expand_file_url(t.url, repo_root)
+			kind:        t.kind
+			tags:        t.tags
 		}
 	}
 	mut addons := []CatalogEntry{}
 	for a in cat.addons {
 		addons << CatalogEntry{
-			name: a.name
+			name:        a.name
 			description: a.description
-			url: expand_file_url(a.url, repo_root)
-			kind: a.kind
-			tags: a.tags
+			url:         expand_file_url(a.url, repo_root)
+			kind:        a.kind
+			tags:        a.tags
 		}
 	}
 	return CatalogFile{
 		templates: templates
-		addons: addons
+		addons:    addons
 	}
 }
 

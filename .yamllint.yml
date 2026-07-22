@@ -1,6 +1,9 @@
 extends: default
 rules:
   line-length:
-    max: 120
+    max: 140
     allow-non-breakable-inline-mappings: true
   document-start: disable
+  braces:
+    max-spaces-inside: 1
+    level: warning

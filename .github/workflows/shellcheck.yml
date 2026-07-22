@@ -1,8 +1,11 @@
 name: Shellcheck
 on:
-  push: { branches: [main] }
-  pull_request: { branches: [main] }
-permissions: { contents: read }
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
 jobs:
   shellcheck:
     runs-on: ubuntu-latest
@@ -10,4 +13,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ludeeus/action-shellcheck@2.0.0
-        with: { scandir: "." }
+        with:
+          scandir: "."
+          ignore_paths: >-
+            completions/create-vlang-app.zsh
+            completions/create-vlang-app.fish

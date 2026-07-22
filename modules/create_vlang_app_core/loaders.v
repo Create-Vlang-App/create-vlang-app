@@ -7,9 +7,7 @@ pub fn copy_tree(src string, dst string) ! {
 		return error(new_error(code_install, 'not a directory: ${src}').msg())
 	}
 	os.mkdir_all(dst) or {}
-	entries := os.ls(src) or {
-		return error(new_error(code_install, 'ls failed: ${src}').msg())
-	}
+	entries := os.ls(src) or { return error(new_error(code_install, 'ls failed: ${src}').msg()) }
 	for name in entries {
 		if name in ['.git', '.vmodules'] {
 			continue
@@ -45,7 +43,7 @@ pub fn merge_layers(layers []string, dest string) ! {
 	os.mkdir_all(dest) or {}
 	for layer in layers {
 		src := ResolvedSource{
-			kind: 'file'
+			kind:       'file'
 			local_path: layer
 		}
 		root := get_template_dir_path(src, layer)
