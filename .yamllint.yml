@@ -7,3 +7,5 @@ rules:
   braces:
     max-spaces-inside: 1
     level: warning
+ignore: |
+  megalinter-reports/
