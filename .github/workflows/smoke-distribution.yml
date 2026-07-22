@@ -1,0 +1,110 @@
+name: Distribution smoke tests
+
+# Smoke-tests published channels: VPM/local binary, Docker, Homebrew tap, AUR.
+on:
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PACKAGE_NAME: create-vlang-app
+  DOCKER_IMAGE: ulisesjeremias/create-vlang-app
+
+concurrency:
+  group: smoke-distribution
+  cancel-in-progress: true
+
+jobs:
+  v-install:
+    name: V install / binary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: vlang/setup-v@86491f8df5313918daebeea16f187fa28c223edd
+        with:
+          version-file: .v-version
+      - name: Install from git (VPM parity)
+        run: |
+          set -euo pipefail
+          v install --git https://github.com/Create-Vlang-App/create-vlang-app@main
+          create-vlang-app --version | grep -qE '[0-9]+\.[0-9]+\.[0-9]+'
+          create-vlang-app --help | grep -q list-templates
+      - name: Run local smoke script
+        run: ./scripts/smoke-distribution.sh
+
+  docker:
+    name: Docker Hub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull image
+        run: docker pull "$DOCKER_IMAGE:latest"
+      - name: Verify --version and --help
+        run: |
+          set -euo pipefail
+          docker run --rm "$DOCKER_IMAGE:latest" --version | grep -qE '[0-9]+\.[0-9]+\.[0-9]+'
+          docker run --rm "$DOCKER_IMAGE:latest" --help | grep -q list-templates
+
+  homebrew:
+    name: Homebrew (Create-Vlang-App/tap)
+    runs-on: macos-latest
+    steps:
+      - name: Tap and install
+        run: |
+          brew tap Create-Vlang-App/tap
+          brew install create-vlang-app
+      - name: Verify CLI
+        run: |
+          create-vlang-app --version | grep -qE '[0-9]+\.[0-9]+\.[0-9]+'
+          create-vlang-app --help | grep -q list-addons
+
+  aur:
+    name: AUR (archlinux container)
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Bootstrap Arch builder
+        run: |
+          pacman -Sy --noconfirm --needed base-devel vlang git sudo
+          useradd -m -G wheel builder
+          echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+      - name: Build from GitHub mirror
+        run: |
+          su builder -c '
+            set -euo pipefail
+            if git clone https://aur.archlinux.org/create-vlang-app.git /tmp/cva 2>/dev/null; then
+              cd /tmp/cva
+            else
+              git clone https://github.com/Create-Vlang-App/aur-package.git /tmp/cva
+              cd /tmp/cva
+            fi
+            makepkg -si --noconfirm
+            create-vlang-app --version | grep -qE "[0-9]+\\.[0-9]+\\.[0-9]+"
+          '
+
+  versions:
+    name: Cross-check published versions
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [v-install, docker, homebrew, aur]
+    steps:
+      - name: Summarize channel versions
+        run: |
+          set -euo pipefail
+          MODULE=$(curl -sfL https://api.github.com/repos/Create-Vlang-App/create-vlang-app/releases/latest | python3 -c "import json,sys; r=json.load(sys.stdin); print(r.get('tag_name','missing').replace('create-vlang-app@',''))" || echo unavailable)
+          FORMULA=$(curl -sfL https://raw.githubusercontent.com/Create-Vlang-App/homebrew-tap/main/Formula/create-vlang-app.rb | grep -oE 'version "[0-9]+\.[0-9]+\.[0-9]+"' | head -1 || echo unavailable)
+          AUR=$(curl -sfL https://aur.archlinux.org/rpc/v5/info?arg=create-vlang-app | python3 -c "import json,sys; d=json.load(sys.stdin); r=d.get('results') or []; print(r[0]['Version'].split('-')[0] if r else 'unavailable')" || echo unavailable)
+          {
+            echo "## Distribution smoke versions"
+            echo "| Channel | Version |"
+            echo "|---------|---------|"
+            echo "| GitHub Release | $MODULE |"
+            echo "| Homebrew formula | $FORMULA |"
+            echo "| AUR | $AUR |"
+          } >> "$GITHUB_STEP_SUMMARY"
