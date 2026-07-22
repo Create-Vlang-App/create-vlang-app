@@ -1,0 +1,13 @@
+{
+  "name": "create-vlang-app",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {},
+  "postCreateCommand": "bash .devcontainer/install-v.sh",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.insertSpaces": false
+      }
+    }
+  }
+}
