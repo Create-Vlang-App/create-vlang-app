@@ -1,14 +1,17 @@
 name: TODO checker
 on:
-  pull_request: { branches: [main] }
-permissions: { contents: read }
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
 jobs:
   todos:
     runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with:
+          fetch-depth: 0
       - run: |
           set -euo pipefail
           if git diff --unified=0 origin/main...HEAD | grep -E "^\+.*(FIXME|XXX)\b"; then

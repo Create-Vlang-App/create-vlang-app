@@ -1,2 +1,5 @@
 module main
-fn main() { println('minimal') }
+
+fn main() {
+	println('minimal')
+}

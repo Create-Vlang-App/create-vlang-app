@@ -41,7 +41,8 @@ fn capture_deps(text string) []string {
 	inner := rest[ob + 1..cb]
 	mut deps := []string{}
 	for part in inner.split(',') {
-		p := part.trim_space().trim_string_left("'").trim_string_right("'").trim_string_left('"').trim_string_right('"')
+		p :=
+			part.trim_space().trim_string_left("'").trim_string_right("'").trim_string_left('"').trim_string_right('"')
 		if p != '' {
 			deps << p
 		}

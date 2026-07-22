@@ -14,8 +14,8 @@ fn test_ensure_cached_file() {
 	os.mkdir_all(dir) or {}
 	os.write_file(os.join_path(dir, 'ok.txt'), 'x') or {}
 	src := ResolvedSource{
-		kind: 'file'
-		url: 'file://${dir}'
+		kind:       'file'
+		url:        'file://${dir}'
 		local_path: dir
 	}
 	got := ensure_cached(src, default_cache_options()) or {

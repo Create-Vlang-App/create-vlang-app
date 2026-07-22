@@ -15,8 +15,8 @@ pub fn default_cache_options() CacheOptions {
 	refresh := os.getenv('CVA_REFRESH')
 	return CacheOptions{
 		cache_dir: default_cache_dir()
-		refresh: if refresh != '' { refresh } else { 'stale' }
-		pin: ''
+		refresh:   if refresh != '' { refresh } else { 'stale' }
+		pin:       ''
 	}
 }
 

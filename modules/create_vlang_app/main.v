@@ -138,28 +138,28 @@ fn main() {
 	if cache_dir != '' {
 		cache = core.CacheOptions{
 			cache_dir: cache_dir
-			refresh: if refresh != '' { refresh } else { cache.refresh }
-			pin: pin
+			refresh:   if refresh != '' { refresh } else { cache.refresh }
+			pin:       pin
 		}
 	} else if pin != '' || refresh != '' {
 		cache = core.CacheOptions{
 			cache_dir: cache.cache_dir
-			refresh: if refresh != '' { refresh } else { cache.refresh }
-			pin: pin
+			refresh:   if refresh != '' { refresh } else { cache.refresh }
+			pin:       pin
 		}
 	}
 
 	opts := core.ScaffoldOptions{
-		project_dir: project_dir
-		template_spec: tmpl
-		addon_specs: addons
-		no_install: no_install
-		force: force
+		project_dir:     project_dir
+		template_spec:   tmpl
+		addon_specs:     addons
+		no_install:      no_install
+		force:           force
 		keep_on_failure: keep_on_failure
-		skip_git: os.getenv('CVA_SKIP_GIT') == '1'
-		cache: cache
-		catalog_path: resolved_catalog_path
-		catalog_url: catalog_url
+		skip_git:        os.getenv('CVA_SKIP_GIT') == '1'
+		cache:           cache
+		catalog_path:    resolved_catalog_path
+		catalog_url:     catalog_url
 	}
 
 	core.scaffold(opts) or {
@@ -301,7 +301,8 @@ fn run_cache_cmd(args []string, force bool, no_interactive bool, json_flag bool)
 		}
 		'clean' {
 			if !force && !no_interactive && os.is_atty(0) > 0 {
-				ans := os.input('Are you sure you want to remove all cached entries? [y/N] ').trim_space().to_lower()
+				ans :=
+					os.input('Are you sure you want to remove all cached entries? [y/N] ').trim_space().to_lower()
 				if ans !in ['y', 'yes'] {
 					println('aborted')
 					return
