@@ -1,0 +1,31 @@
+name: Pull Request Validation
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-review-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: vlang/setup-v@12a9fab625c7fd9e51972eef71c84c3d4f41c45c
+        with:
+          version-file: .v-version
+      - name: Aggregate PR gates
+        run: |
+          set -euo pipefail
+          make fmt-check
+          make vet
+          make test
+          make build
