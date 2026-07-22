@@ -1,4 +1,4 @@
-name: Tests
+name: Lint
 
 on:
   push:
@@ -11,11 +11,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: tests-${{ github.ref }}
+  group: lint-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  test:
+  lint:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
@@ -24,5 +24,7 @@ jobs:
       - uses: vlang/setup-v@86491f8df5313918daebeea16f187fa28c223edd
         with:
           version-file: .v-version
-      - name: Run tests
-        run: make test
+      - name: Check formatting
+        run: make fmt-check
+      - name: Vet modules
+        run: make vet
