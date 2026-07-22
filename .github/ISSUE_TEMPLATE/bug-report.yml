@@ -1,0 +1,20 @@
+name: Bug report
+description: Report a problem with create-vlang-app
+labels: [bug]
+body:
+  - type: textarea
+    id: describe
+    attributes:
+      label: Describe the bug
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: create-vlang-app / V version
