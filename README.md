@@ -10,27 +10,30 @@ create-vlang-app my-project
 
 ## Status
 
-Bootstrapping. See [issue #1](https://github.com/Create-Vlang-App/create-vlang-app/issues/1) for the roadmap.
+Bootstrapping. Roadmap: [issue #1](https://github.com/Create-Vlang-App/create-vlang-app/issues/1).
 
 ## Layout
 
 See [docs/adr/0001-module-layout.md](docs/adr/0001-module-layout.md).
 
-## License
-
-MIT (forthcoming).
+```text
+modules/create_vlang_app_core   # scaffolding engine
+modules/create_vlang_app        # CLI binary
+```
 
 ## Toolchain
 
-This repository pins the V compiler via [`.v-version`](.v-version).
+Pinned via [`.v-version`](.v-version). CI should use [`vlang/setup-v`](https://github.com/vlang/setup-v) with `version-file: .v-version`.
 
-CI should use [`vlang/setup-v`](https://github.com/vlang/setup-v) with:
+## Development
 
-```yaml
-- uses: vlang/setup-v@v1
-  with:
-    version-file: .v-version
-    cache: true
+```bash
+make test
+make fmt
+make vet
+make build
 ```
 
-Locally: install a matching V (`v version`) or run `v up` and verify compatibility.
+## License
+
+[MIT](LICENSE)
