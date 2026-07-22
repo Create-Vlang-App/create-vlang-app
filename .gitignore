@@ -35,3 +35,6 @@ megalinter-reports/
 # Coverage / test artifacts
 *.cover
 coverage/
+
+# Local V module path for monorepo builds
+.vmodules/
