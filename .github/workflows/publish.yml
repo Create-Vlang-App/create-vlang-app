@@ -100,7 +100,7 @@ jobs:
             -arch "${{ matrix.arch }}" \
             -o "$GITHUB_WORKSPACE/$OUT" .
           ls -la "$GITHUB_WORKSPACE/dist"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: success()
         with:
           name: ${{ matrix.asset }}
@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
