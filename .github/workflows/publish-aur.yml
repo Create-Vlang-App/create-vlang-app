@@ -1,0 +1,165 @@
+name: Publish to AUR
+
+# Runs after Release succeeds, or manually. Publishes PKGBUILD to aur.archlinux.org
+# and keeps Create-Vlang-App/aur-package in sync.
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Package version (e.g. 0.0.1)"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-aur
+  cancel-in-progress: false
+
+env:
+  AUR_PACKAGE: create-vlang-app
+  AUR_RPC_URL: https://aur.archlinux.org/rpc/v5/info?arg=create-vlang-app
+  GH_REPO: Create-Vlang-App/create-vlang-app
+
+jobs:
+  aur:
+    name: Update AUR package
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'create-vlang-app@'))
+    runs-on: ubuntu-latest
+    environment: release
+    timeout-minutes: 20
+    steps:
+      - name: Resolve version
+        id: version
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          RUN_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -euo pipefail
+          if [ -n "${INPUT_VERSION:-}" ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            VERSION="${RUN_BRANCH#create-vlang-app@}"
+          fi
+          if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([a-zA-Z0-9.-]+)?$'; then
+            echo "::error::Invalid AUR package version: $VERSION"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=create-vlang-app@${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout aur-package mirror repo
+        uses: actions/checkout@v4
+        with:
+          repository: Create-Vlang-App/aur-package
+          token: ${{ secrets.AUR_REPO_TOKEN }}
+          path: aur-package
+
+      - name: Update PKGBUILD (version + release tarball sha256)
+        working-directory: aur-package
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.version }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          retry() {
+            local attempts="$1"
+            local delay="$2"
+            shift 2
+            for attempt in $(seq 1 "$attempts"); do
+              if "$@"; then
+                return 0
+              fi
+              if [ "$attempt" = "$attempts" ]; then
+                return 1
+              fi
+              echo "::warning::Attempt $attempt/$attempts failed: $*; retrying in ${delay}s" >&2
+              sleep "$delay"
+            done
+          }
+
+          URL="https://github.com/${GH_REPO}/archive/refs/tags/${RELEASE_TAG}.tar.gz"
+          TMP="$(mktemp)"
+          retry 24 15 curl -sfL "$URL" -o "$TMP"
+          SHA=$(sha256sum "$TMP" | cut -d' ' -f1)
+          rm -f "$TMP"
+          if [ -z "$SHA" ]; then
+            echo "::error::Failed to hash release tarball at $URL" >&2
+            exit 1
+          fi
+
+          _srcdir="create-vlang-app-${RELEASE_TAG}"
+          sed -i "s/^pkgver=.*/pkgver=${NEW_VERSION}/" PKGBUILD
+          sed -i "s/^pkgrel=.*/pkgrel=1/" PKGBUILD
+          sed -i "s/^_commit=.*/_tag=${RELEASE_TAG}/" PKGBUILD
+          sed -i "s|^source=.*|source=(\"${AUR_PACKAGE}-${NEW_VERSION}.tar.gz::${URL}\")|" PKGBUILD
+          sed -i "s/^sha256sums=.*/sha256sums=('${SHA}')/" PKGBUILD
+          sed -i "s/create-vlang-app-\${_commit}/${_srcdir}/g" PKGBUILD
+          sed -i "s/create-vlang-app-\${_tag}/${_srcdir}/g" PKGBUILD
+
+          echo "----- Updated PKGBUILD -----"
+          cat PKGBUILD
+
+      - name: Preflight AUR availability
+        env:
+          AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$AUR_SSH_PRIVATE_KEY" || {
+            echo "::error::AUR_SSH_PRIVATE_KEY is empty or unavailable in the release environment"
+            exit 1
+          }
+          curl -fsSL "$AUR_RPC_URL" >/tmp/aur-rpc.json
+          mkdir -p ~/.ssh
+          ssh-keyscan -T 30 -t rsa,ecdsa,ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
+          git ls-remote "https://aur.archlinux.org/${AUR_PACKAGE}.git" >/dev/null
+
+      - name: Publish to AUR
+        uses: ulises-jeremias/github-actions-aur-publish@217e4e2abbbee9ecc942bdc0681302e233656d9f # v1
+        with:
+          pkgname: create-vlang-app
+          pkgbuild: aur-package/PKGBUILD
+          commit_username: "Create Vlang App Bot"
+          commit_email: "ulisescf.24@gmail.com"
+          commit_message: "Update to version ${{ steps.version.outputs.version }}"
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          allow_empty_commits: "false"
+          ssh_keyscan_types: "rsa,ecdsa,ed25519"
+
+      - name: Verify AUR RPC after publish
+        env:
+          EXPECTED_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          curl -fsSL "$AUR_RPC_URL" >/tmp/aur-rpc.json
+          AUR_VERSION=$(python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path("/tmp/aur-rpc.json").read_text())
+          results = data.get("results") or []
+          print(results[0]["Version"].split("-", 1)[0] if results else "")
+          PY
+          )
+          {
+            echo "## AUR publish verification"
+            echo "- Expected: \`$EXPECTED_VERSION\`"
+            echo "- AUR RPC: \`${AUR_VERSION:-missing}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ "$AUR_VERSION" != "$EXPECTED_VERSION" ]; then
+            echo "::warning::AUR RPC has not reflected ${EXPECTED_VERSION} yet (current: ${AUR_VERSION:-missing})"
+          fi
+
+      - name: Sync updated PKGBUILD to GitHub mirror
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          repository: aur-package
+          commit_message: "chore: sync PKGBUILD for v${{ steps.version.outputs.version }}"
+          commit_user_name: "Create Vlang App Bot"
+          commit_user_email: "ulisescf.24@gmail.com"
+          file_pattern: "PKGBUILD .SRCINFO"
