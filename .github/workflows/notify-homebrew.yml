@@ -1,0 +1,79 @@
+name: Notify Homebrew tap
+
+# Runs after Release succeeds, or manually. Dispatches to Create-Vlang-App/homebrew-tap
+# so update-formula can bump the formula once release tarballs exist.
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Package version (e.g. 0.0.1)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    name: Dispatch to homebrew-tap
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'create-vlang-app@'))
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - name: Resolve version
+        id: version
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          RUN_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -euo pipefail
+          if [ -n "${INPUT_VERSION:-}" ]; then
+            VERSION="$INPUT_VERSION"
+          else
+            VERSION="${RUN_BRANCH#create-vlang-app@}"
+          fi
+          if ! echo "$VERSION" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+([a-zA-Z0-9.-]+)?$'; then
+            echo "::error::Invalid Homebrew notify version: $VERSION"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=create-vlang-app@${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for GitHub Release tarball
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          URL="https://github.com/Create-Vlang-App/create-vlang-app/archive/refs/tags/${TAG}.tar.gz"
+          for attempt in $(seq 1 24); do
+            if curl -sfI "$URL" >/dev/null; then
+              echo "Release tarball ready: $URL"
+              exit 0
+            fi
+            echo "::warning::Release tarball not ready (attempt ${attempt}/24); retrying in 15s"
+            sleep 15
+          done
+          echo "::error::Timed out waiting for $URL"
+          exit 1
+
+      - name: Dispatch repository event
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::HOMEBREW_TAP_TOKEN secret is not set" >&2
+            exit 1
+          fi
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            /repos/Create-Vlang-App/homebrew-tap/dispatches \
+            -f "event_type=new-release" \
+            -f "client_payload[version]=$VERSION"
