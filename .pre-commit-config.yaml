@@ -1,0 +1,18 @@
+repos:
+  - repo: local
+    hooks:
+      - id: v-fmt-verify
+        name: v fmt -verify
+        entry: bash -c 'cd modules/create_vlang_app_core && v fmt -verify . && cd ../create_vlang_app && v fmt -verify .'
+        language: system
+        pass_filenames: false
+      - id: v-vet
+        name: v vet
+        entry: make vet
+        language: system
+        pass_filenames: false
+      - id: trailing-whitespace
+        name: trailing whitespace
+        entry: bash -c 'git diff --cached --name-only --diff-filter=ACM | xargs -r grep -n "[[:space:]]$" && exit 1 || exit 0'
+        language: system
+        pass_filenames: false
