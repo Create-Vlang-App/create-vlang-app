@@ -46,3 +46,8 @@ make build
 ## Topics
 
 GitHub topics: `vlang`, `scaffolding`, `cli`, `vpm`, `hacktoberfest`.
+
+## Related
+
+- [cva-templates](https://github.com/Create-Vlang-App/cva-templates)
+- [website](https://github.com/Create-Vlang-App/website)
