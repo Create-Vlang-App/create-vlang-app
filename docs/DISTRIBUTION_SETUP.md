@@ -11,7 +11,7 @@
 | **AUR** | `publish-aur.yml` (after Release) | `AUR_SSH_PRIVATE_KEY`, `AUR_REPO_TOKEN` |
 | **Homebrew** | `notify-homebrew.yml` → `homebrew-tap` | `HOMEBREW_TAP_TOKEN` |
 
-### curl|sh (interim primary for end users)
+## curl|sh (interim primary for end users)
 
 Canonical script: [`scripts/install.sh`](../scripts/install.sh).
 
