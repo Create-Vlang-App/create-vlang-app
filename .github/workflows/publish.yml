@@ -46,6 +46,7 @@ jobs:
     name: Build ${{ matrix.asset }}
     needs: verify
     runs-on: ${{ matrix.runner }}
+    continue-on-error: ${{ matrix.optional }}
     strategy:
       fail-fast: false
       matrix:
@@ -55,31 +56,37 @@ jobs:
             arch: amd64
             asset: create-vlang-app-linux-x86_64
             ext: ""
+            optional: false
           - runner: ubuntu-latest
             os: linux
             arch: arm64
             asset: create-vlang-app-linux-aarch64
             ext: ""
+            optional: true
           - runner: macos-latest
             os: macos
             arch: arm64
             asset: create-vlang-app-darwin-aarch64
             ext: ""
+            optional: true
           - runner: macos-13
             os: macos
             arch: amd64
             asset: create-vlang-app-darwin-x86_64
             ext: ""
-          - runner: ubuntu-latest
+            optional: true
+          - runner: windows-latest
             os: windows
             arch: amd64
             asset: create-vlang-app-windows-x86_64
             ext: .exe
+            optional: true
     steps:
       - uses: actions/checkout@v7
-      - uses: vlang/setup-v@86491f8df5313918daebeea16f187fa28c223edd
+      - uses: vlang/setup-v@12a9fab625c7fd9e51972eef71c84c3d4f41c45c
         with:
           version-file: .v-version
+          cache: true
       - name: Build binary
         shell: bash
         run: |
@@ -94,6 +101,7 @@ jobs:
             -o "$GITHUB_WORKSPACE/$OUT" .
           ls -la "$GITHUB_WORKSPACE/dist"
       - uses: actions/upload-artifact@v7
+        if: success()
         with:
           name: ${{ matrix.asset }}
           path: dist/${{ matrix.asset }}${{ matrix.ext }}
@@ -101,7 +109,7 @@ jobs:
   release:
     name: Upload GitHub Release assets
     needs: build
-    if: startsWith(github.ref, 'refs/tags/')
+    if: always() && startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -128,3 +136,4 @@ jobs:
             dist/create-vlang-app-*
             dist/SHA256SUMS
           generate_release_notes: true
+          fail_on_unmatched_files: false
