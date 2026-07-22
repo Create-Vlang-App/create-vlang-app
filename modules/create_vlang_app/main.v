@@ -16,6 +16,9 @@ fn main() {
 	show_info := fp.bool('info', `i`, false, 'print environment info')
 	verbose := fp.bool('verbose', `v`, false, 'verbose output')
 	template_spec := fp.string('template', `t`, '', 'template URL, file://, or slug')
+	addons_flag := fp.string('addons', `a`, '', 'comma-separated addon slugs or URLs')
+	_ := fp.string('extend', 0, '', 'alias for --addons (single value; prefer --addons)')
+	_ := fp.string('set', 0, '', 'set key=value (reserved)')
 	force := fp.bool('force', `f`, false, 'allow non-empty target directory')
 	no_install := fp.bool('no-install', 0, false, 'skip v install')
 	interactive := fp.bool('interactive', 0, true, 'interactive prompts')
@@ -29,6 +32,8 @@ fn main() {
 	refresh := fp.string('refresh', 0, '', 'always|stale|manual')
 	strict_version := fp.bool('strict-version', 0, false, 'strict version checks')
 	keep_on_failure := fp.bool('keep-on-failure', 0, false, 'keep project dir on failure')
+	catalog_url := fp.string('catalog-url', 0, '', 'override templates.json URL')
+	catalog_path := fp.string('catalog-path', 0, '', 'local templates.json path')
 
 	additional := fp.finalize() or {
 		eprintln(err)
@@ -43,7 +48,16 @@ fn main() {
 	apply_env(offline, no_cache, cache_dir, refresh, strict_version)
 
 	if list_templates || list_addons {
-		println('Catalog listing requires fixtures/network (see --help). Stub: use cva-templates.')
+		cat := core.load_catalog(catalog_path, catalog_url) or {
+			eprintln(err)
+			exit(1)
+		}
+		if list_templates {
+			println(core.format_catalog_list('Templates', core.list_template_names(cat)))
+		}
+		if list_addons {
+			println(core.format_catalog_list('Addons', core.list_addon_names(cat)))
+		}
 		return
 	}
 
@@ -57,24 +71,31 @@ fn main() {
 	use_interactive := interactive && !no_interactive
 
 	mut addons := []string{}
-	// collect repeated --addons from raw args
-	for i, a in os.args {
-		if a == '--addons' || a == '--extend' {
-			if i + 1 < os.args.len {
-				addons << os.args[i + 1]
+	if addons_flag != '' {
+		for part in addons_flag.split(',') {
+			s := part.trim_space()
+			if s != '' {
+				addons << s
 			}
 		}
 	}
-
-	mut sets := []string{}
+	// also collect repeated --addons / --extend from raw args
 	for i, a in os.args {
-		if a == '--set' && i + 1 < os.args.len {
-			sets << os.args[i + 1]
+		if a == '--addons' || a == '--extend' {
+			if i + 1 < os.args.len {
+				val := os.args[i + 1]
+				if !addons.contains(val) {
+					for part in val.split(',') {
+						s := part.trim_space()
+						if s != '' && !addons.contains(s) {
+							addons << s
+						}
+					}
+				}
+			}
 		}
 	}
-	_ = sets
 	_ = verbose
-	_ = use_interactive
 
 	mut project_dir := project
 	mut tmpl := template_spec
@@ -117,6 +138,8 @@ fn main() {
 		keep_on_failure: keep_on_failure
 		skip_git: os.getenv('CVA_SKIP_GIT') == '1'
 		cache: cache
+		catalog_path: catalog_path
+		catalog_url: catalog_url
 	}
 
 	core.scaffold(opts) or {

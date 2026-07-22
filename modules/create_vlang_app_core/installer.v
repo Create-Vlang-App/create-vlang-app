@@ -4,14 +4,16 @@ import os
 
 pub struct ScaffoldOptions {
 pub:
-	project_dir   string
-	template_spec string
-	addon_specs   []string
-	no_install    bool
-	force         bool
+	project_dir     string
+	template_spec   string
+	addon_specs     []string
+	no_install      bool
+	force           bool
 	keep_on_failure bool
-	skip_git      bool
-	cache         CacheOptions
+	skip_git        bool
+	cache           CacheOptions
+	catalog_path    string
+	catalog_url     string
 }
 
 pub fn scaffold(opts ScaffoldOptions) ! {
@@ -26,8 +28,27 @@ pub fn scaffold(opts ScaffoldOptions) ! {
 	}
 	os.mkdir_all(opts.project_dir) or {}
 
+	mut cat := CatalogFile{}
+	mut need_cat := spec_needs_catalog(opts.template_spec)
+	for a in opts.addon_specs {
+		if spec_needs_catalog(a) {
+			need_cat = true
+			break
+		}
+	}
+	if need_cat || opts.catalog_path != '' {
+		cat = load_catalog(opts.catalog_path, opts.catalog_url) or {
+			cleanup_on_failure(opts)
+			return err
+		}
+	}
+
 	mut layers := []string{}
-	template_src := resolve_source(opts.template_spec)
+	template_url := resolve_user_spec(opts.template_spec, cat) or {
+		cleanup_on_failure(opts)
+		return err
+	}
+	template_src := resolve_source(template_url)
 	template_root := ensure_cached(template_src, opts.cache) or {
 		cleanup_on_failure(opts)
 		return err
@@ -35,7 +56,11 @@ pub fn scaffold(opts ScaffoldOptions) ! {
 	layers << get_template_dir_path(template_src, template_root)
 
 	for addon in opts.addon_specs {
-		asrc := resolve_source(addon)
+		aurl := resolve_user_spec(addon, cat) or {
+			cleanup_on_failure(opts)
+			return err
+		}
+		asrc := resolve_source(aurl)
 		aroot := ensure_cached(asrc, opts.cache) or {
 			cleanup_on_failure(opts)
 			return err
