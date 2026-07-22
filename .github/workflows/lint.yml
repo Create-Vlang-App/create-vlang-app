@@ -20,7 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: vlang/setup-v@v1
+      # v1.7 lacks prebuilt installs; pin until v1.8 ships (setup-v#60).
+      - uses: vlang/setup-v@86491f8df5313918daebeea16f187fa28c223edd
         with:
           version-file: .v-version
       - name: Check formatting
