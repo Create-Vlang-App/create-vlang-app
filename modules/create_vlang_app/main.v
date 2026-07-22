@@ -5,7 +5,7 @@ import flag
 import json
 import create_vlang_app_core as core
 
-const app_version = '0.0.1'
+const app_version = '0.1.0'
 
 fn main() {
 	mut fp := flag.new_flag_parser(os.args)
