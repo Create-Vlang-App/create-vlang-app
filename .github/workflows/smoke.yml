@@ -49,3 +49,21 @@ jobs:
             --fixture --no-interactive --force --no-install
           test -f "$RUNNER_TEMP/cva-combo/v.mod"
           test -f "$RUNNER_TEMP/cva-combo/src/addon.v"
+
+  install-sh:
+    name: curl|sh installer
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install from GitHub Release via scripts/install.sh
+        run: |
+          set -euo pipefail
+          DEST="${RUNNER_TEMP}/cva-install-bin"
+          CVA_INSTALL_DIR="$DEST" sh scripts/install.sh
+          export PATH="${DEST}:${PATH}"
+          create-vlang-app --version | grep -qE '[0-9]+\.[0-9]+\.[0-9]+'
+          create-awesome-vlang-app --version | grep -qE '[0-9]+\.[0-9]+\.[0-9]+'
+          test -L "${DEST}/create-awesome-vlang-app"
+      - name: Dry-run
+        run: CVA_DRY_RUN=1 sh scripts/install.sh

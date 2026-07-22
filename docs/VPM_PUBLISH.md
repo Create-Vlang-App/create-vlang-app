@@ -6,7 +6,8 @@
 
 ## Current status (0.1.0)
 
-- **Primary install path:** GitHub Release binary (`create-vlang-app-linux-x86_64`).
+- **Primary install path (interim):** `curl|sh` via [`scripts/install.sh`](../scripts/install.sh) → GitHub Release binary (`create-vlang-app-linux-x86_64` + `SHA256SUMS`).
+- **Hero URL:** `https://create-awesome-vlang-app.vercel.app/install.sh`
 - **VPM registration:** may require interactive maintainer steps on [vlang/vpm](https://github.com/vlang/vpm). Until registered, document Release as the supported CI/install channel.
 
 ## Steps
