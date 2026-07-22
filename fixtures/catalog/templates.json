@@ -3,14 +3,14 @@
     {
       "name": "minimal",
       "description": "Minimal V project",
-      "url": "https://github.com/Create-Vlang-App/create-vlang-app?subdir=modules/create_vlang_app_core/testdata/layers/base",
+      "url": "file://./modules/create_vlang_app_core/testdata/layers/base",
       "kind": "template",
       "tags": ["base"]
     },
     {
       "name": "web-server",
       "description": "HTTP server starter",
-      "url": "https://github.com/Create-Vlang-App/cva-templates",
+      "url": "https://github.com/Create-Vlang-App/cva-templates?subdir=templates/web-server",
       "kind": "template",
       "tags": ["web"]
     }
@@ -19,7 +19,7 @@
     {
       "name": "github-setup",
       "description": "GitHub Actions with setup-v",
-      "url": "https://github.com/Create-Vlang-App/create-vlang-app?subdir=modules/create_vlang_app_core/testdata/layers/addon",
+      "url": "file://./modules/create_vlang_app_core/testdata/layers/addon",
       "kind": "addon",
       "tags": ["ci"]
     }

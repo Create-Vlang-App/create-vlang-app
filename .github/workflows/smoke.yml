@@ -10,6 +10,7 @@ jobs:
       fail-fast: false
       matrix: { os: [ubuntu-latest, macos-latest, windows-latest] }
     runs-on: ${{ matrix.os }}
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v4
       - uses: vlang/setup-v@v1
@@ -20,6 +21,23 @@ jobs:
         run: |
           ./create-vlang-app "$RUNNER_TEMP/cva-smoke" \
             --template minimal \
-            --catalog-path fixtures/catalog/templates.json \
-            --no-interactive --force --no-install || true
-          ls "$RUNNER_TEMP/cva-smoke" || true
+            --fixture \
+            --no-interactive --force --no-install
+          test -f "$RUNNER_TEMP/cva-smoke/v.mod"
+
+  addon-combo:
+    if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: vlang/setup-v@v1
+        with: { version-file: .v-version }
+      - shell: bash
+        run: make build
+      - shell: bash
+        run: |
+          ./create-vlang-app "$RUNNER_TEMP/cva-combo" \
+            --template minimal --addons github-setup \
+            --fixture --no-interactive --force --no-install
+          test -f "$RUNNER_TEMP/cva-combo/v.mod"
+          test -f "$RUNNER_TEMP/cva-combo/src/addon.v"

@@ -23,3 +23,9 @@ fn test_default_cache_dir_contains_cva() {
 	assert d.contains('.cache')
 	assert d.contains('cva')
 }
+
+fn test_resolve_ssh_git_url() {
+	s := resolve_source('git@github.com:Create-Vlang-App/cva-templates.git')
+	assert s.kind == 'git' || s.kind == 'github'
+	assert s.url.contains('git@github.com')
+}
