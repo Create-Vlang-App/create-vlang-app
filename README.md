@@ -16,7 +16,7 @@ One command. Any V stack.
 [![Website](https://img.shields.io/badge/site-create--awesome--vlang--app.vercel.app-8B5CF6?style=flat-square)](https://create-awesome-vlang-app.vercel.app)
 [![AUR](https://img.shields.io/aur/version/create-vlang-app?style=flat-square&label=AUR&logo=archlinux)](https://aur.archlinux.org/packages/create-vlang-app)
 [![Homebrew](https://img.shields.io/badge/homebrew-Create--Vlang--App%2Ftap-orange?style=flat-square&logo=homebrew)](https://github.com/Create-Vlang-App/homebrew-tap)
-[![Discord](https://img.shields.io/discord/1527933660764831825?style=flat-square&label=Discord&logo=discord&logoColor=white)](https://discord.gg/dwFTsR7fK2)
+[![Discord](https://img.shields.io/discord/1527933660764831825?style=flat-square&label=Discord&logo=discord&logoColor=white)](https://discord.gg/bR5VyATgka)
 
 [Official Site](https://create-awesome-vlang-app.vercel.app) · [Catalog](https://create-awesome-vlang-app.vercel.app/templates) · [Templates](https://github.com/Create-Vlang-App/cva-templates) · [Contributing](CONTRIBUTING.md) · [Releases](https://github.com/Create-Vlang-App/create-vlang-app/releases)
 
