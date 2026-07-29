@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: vlang/setup-v@b7d5f895bdb0395f03cf899f4e860d97e89751b5
+      - uses: vlang/setup-v@e03033bd9114647a45b10ee8e083a1da1eab1105
         with:
           version-file: .v-version
       - name: Install from git (VPM parity)
@@ -86,7 +86,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - id: setup-v
-        uses: vlang/setup-v@b7d5f895bdb0395f03cf899f4e860d97e89751b5
+        uses: vlang/setup-v@e03033bd9114647a45b10ee8e083a1da1eab1105
         with:
           version-file: .v-version
           cache: true
