@@ -84,13 +84,6 @@ jobs:
     name: AUR (archlinux container)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - id: setup-v
-        uses: vlang/setup-v@e03033bd9114647a45b10ee8e083a1da1eab1105
-        with:
-          version-file: .v-version
-          cache: true
-      # Never install V from the AUR `vlang` package (stale). Reuse setup-v like the rest of CI.
       - name: Build AUR -bin package (prebuilt)
         run: |
           set -euo pipefail
