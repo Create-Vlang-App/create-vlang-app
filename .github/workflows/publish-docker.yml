@@ -47,16 +47,10 @@ jobs:
           fi
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           MINOR=$(echo "$VERSION" | cut -d. -f2)
-          V_VERSION="$(tr -d '[:space:]' < .v-version)"
-          if [ -z "$V_VERSION" ]; then
-            echo "::error::.v-version is empty"
-            exit 1
-          fi
           {
             echo "version=$VERSION"
             echo "major=$MAJOR"
             echo "minor=$MINOR"
-            echo "v_version=$V_VERSION"
           } >> "$GITHUB_OUTPUT"
 
       - name: Wait for GitHub Release assets
@@ -76,11 +70,6 @@ jobs:
           done
           echo "::error::Timed out waiting for release assets at $URL"
           exit 1
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-        with:
-          platforms: linux/arm64
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -109,16 +98,16 @@ jobs:
             org.opencontainers.image.licenses=MIT
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
 
+      # linux/amd64 only until Release publishes linux-arm64 assets.
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
           context: .
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             VERSION=${{ steps.version.outputs.version }}
-            V_VERSION=${{ steps.version.outputs.v_version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
