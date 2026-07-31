@@ -46,10 +46,16 @@ jobs:
       - uses: vlang/setup-v@e03033bd9114647a45b10ee8e083a1da1eab1105
         with:
           version-file: .v-version
-      - name: Install from git (VPM parity)
+      - name: Install module from git (VPM parity) and build CLI
         run: |
           set -euo pipefail
+          # v install places the module under ~/.vmodules; it does not put a
+          # create-vlang-app binary on PATH. Build from the installed tree.
           v install --git https://github.com/Create-Vlang-App/create-vlang-app@main
+          MOD="${HOME}/.vmodules/create_vlang_app_workspace"
+          test -d "$MOD"
+          make -C "$MOD" build
+          export PATH="${MOD}:${PATH}"
           create-vlang-app --version | grep -qE '[0-9]+\.[0-9]+\.[0-9]+'
           create-vlang-app --help | grep -q list-templates
       - name: Run local smoke script
@@ -73,7 +79,10 @@ jobs:
     steps:
       - name: Tap and install
         run: |
+          set -euo pipefail
           brew tap Create-Vlang-App/tap
+          # Homebrew 5+ refuses third-party taps until explicitly trusted.
+          brew trust Create-Vlang-App/tap
           brew install create-vlang-app
       - name: Verify CLI
         run: |
