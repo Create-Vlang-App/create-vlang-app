@@ -47,10 +47,16 @@ jobs:
           fi
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           MINOR=$(echo "$VERSION" | cut -d. -f2)
+          V_VERSION="$(tr -d '[:space:]' < .v-version)"
+          if [ -z "$V_VERSION" ]; then
+            echo "::error::.v-version is empty"
+            exit 1
+          fi
           {
             echo "version=$VERSION"
             echo "major=$MAJOR"
             echo "minor=$MINOR"
+            echo "v_version=$V_VERSION"
           } >> "$GITHUB_OUTPUT"
 
       - name: Wait for GitHub Release assets
@@ -113,6 +119,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             VERSION=${{ steps.version.outputs.version }}
-            V_VERSION=$(cat .v-version)
+            V_VERSION=${{ steps.version.outputs.v_version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
