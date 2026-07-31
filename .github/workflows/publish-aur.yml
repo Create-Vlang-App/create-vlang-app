@@ -64,6 +64,7 @@ jobs:
         uses: actions/checkout@v7
         with:
           repository: Create-Vlang-App/aur-package
+          ref: main
           token: ${{ secrets.AUR_REPO_TOKEN }}
           path: aur-package
 
