@@ -71,11 +71,6 @@ jobs:
           echo "::error::Timed out waiting for release assets at $URL"
           exit 1
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-        with:
-          platforms: linux/arm64
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
 
@@ -103,16 +98,16 @@ jobs:
             org.opencontainers.image.licenses=MIT
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
 
+      # linux/amd64 only until Release publishes linux-arm64 assets.
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
           context: .
           push: true
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             VERSION=${{ steps.version.outputs.version }}
-            V_VERSION=$(cat .v-version)
           cache-from: type=gha
           cache-to: type=gha,mode=max

@@ -97,7 +97,9 @@ docker run --rm ulisesjeremias/create-vlang-app:0.0.1 --version
 
 ## AUR (`AUR_SSH_PRIVATE_KEY`, `AUR_REPO_TOKEN`)
 
-**Prereqs**: AUR account for `create-vlang-app`, mirror [`Create-Vlang-App/aur-package`](https://github.com/Create-Vlang-App/aur-package).
+**Prereqs**: AUR account for `create-awesome-vlang-app` (+ optional `-bin`), mirror [`Create-Vlang-App/aur-package`](https://github.com/Create-Vlang-App/aur-package).
+
+Live packages: [`create-awesome-vlang-app`](https://aur.archlinux.org/packages/create-awesome-vlang-app) (source) and [`create-awesome-vlang-app-bin`](https://aur.archlinux.org/packages/create-awesome-vlang-app-bin) (prebuilt).
 
 ### Bootstrap the AUR package (first release only)
 
@@ -108,7 +110,7 @@ cd /tmp
 rm -rf aur-bootstrap
 git clone git@github.com:Create-Vlang-App/aur-package.git aur-bootstrap
 cd aur-bootstrap
-git remote add aur ssh://aur@aur.archlinux.org/create-vlang-app.git
+git remote add aur ssh://aur@aur.archlinux.org/create-awesome-vlang-app.git
 git push aur main:master
 ```
 
@@ -163,7 +165,7 @@ gh workflow run "Publish to AUR" --repo Create-Vlang-App/create-vlang-app -f ver
 # End-user checks
 v install create-vlang-app && create-vlang-app --version
 brew install create-vlang-app && create-vlang-app --version
-yay -S create-vlang-app && create-vlang-app --version
+yay -S create-awesome-vlang-app-bin && create-vlang-app --version
 docker run --rm ulisesjeremias/create-vlang-app:latest --help
 ```
 
