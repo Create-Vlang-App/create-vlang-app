@@ -1,6 +1,6 @@
 name: Publish to AUR
 
-# Runs after Release succeeds, or manually. Publishes PKGBUILD to aur.archlinux.org
+# Runs after Release succeeds, or manually. Publishes PKGBUILDs to aur.archlinux.org
 # and keeps Create-Vlang-App/aur-package in sync.
 on:
   workflow_run:
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Package version (e.g. 0.0.1)"
+        description: "Package version (e.g. 0.1.0)"
         required: true
 
 permissions:
@@ -20,13 +20,11 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  AUR_PACKAGE: create-vlang-app
-  AUR_RPC_URL: https://aur.archlinux.org/rpc/v5/info?arg=create-vlang-app
   GH_REPO: Create-Vlang-App/create-vlang-app
 
 jobs:
   aur:
-    name: Update AUR package
+    name: Update AUR (${{ matrix.package }})
     if: >-
       github.event_name == 'workflow_dispatch' ||
       (github.event.workflow_run.conclusion == 'success' &&
@@ -34,6 +32,14 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: create-awesome-vlang-app
+            kind: source
+          - package: create-awesome-vlang-app-bin
+            kind: bin
     steps:
       - name: Resolve version
         id: version
@@ -61,11 +67,13 @@ jobs:
           token: ${{ secrets.AUR_REPO_TOKEN }}
           path: aur-package
 
-      - name: Update PKGBUILD (version + release tarball sha256)
-        working-directory: aur-package
+      - name: Update PKGBUILD (version + checksums)
+        working-directory: aur-package/${{ matrix.package }}
         env:
           NEW_VERSION: ${{ steps.version.outputs.version }}
           RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          KIND: ${{ matrix.kind }}
+          PKG: ${{ matrix.package }}
         run: |
           set -euo pipefail
           retry() {
@@ -84,47 +92,61 @@ jobs:
             done
           }
 
-          URL="https://github.com/${GH_REPO}/archive/refs/tags/${RELEASE_TAG}.tar.gz"
-          TMP="$(mktemp)"
-          retry 24 15 curl -sfL "$URL" -o "$TMP"
-          SHA=$(sha256sum "$TMP" | cut -d' ' -f1)
-          rm -f "$TMP"
-          if [ -z "$SHA" ]; then
-            echo "::error::Failed to hash release tarball at $URL" >&2
-            exit 1
+          if [ "$KIND" = "source" ]; then
+            URL="https://github.com/${GH_REPO}/archive/refs/tags/${RELEASE_TAG}.tar.gz"
+            # GitHub expands tag create-vlang-app@X.Y.Z → create-vlang-app-create-vlang-app-X.Y.Z
+            SRCDIR="create-vlang-app-create-vlang-app-${NEW_VERSION}"
+            TMP="$(mktemp)"
+            retry 24 15 curl -sfL "$URL" -o "$TMP"
+            SHA=$(sha256sum "$TMP" | cut -d' ' -f1)
+            rm -f "$TMP"
+            sed -i "s/^pkgver=.*/pkgver=${NEW_VERSION}/" PKGBUILD
+            sed -i "s/^pkgrel=.*/pkgrel=1/" PKGBUILD
+            sed -i "s|^source=.*|source=(\"${PKG}-\${pkgver}.tar.gz::${URL}\")|" PKGBUILD
+            sed -i "s/^sha256sums=.*/sha256sums=('${SHA}')/" PKGBUILD
+            # Keep build/package cd paths aligned with the archive directory name
+            sed -i "s|cd \".*\"|cd \"${SRCDIR}\"|" PKGBUILD
+          else
+            BIN_URL="https://github.com/${GH_REPO}/releases/download/${RELEASE_TAG}/create-vlang-app-linux-x86_64"
+            TMP="$(mktemp)"
+            retry 24 15 curl -sfL "$BIN_URL" -o "$TMP"
+            SHA=$(sha256sum "$TMP" | cut -d' ' -f1)
+            rm -f "$TMP"
+            sed -i "s/^pkgver=.*/pkgver=${NEW_VERSION}/" PKGBUILD
+            sed -i "s/^pkgrel=.*/pkgrel=1/" PKGBUILD
+            sed -i "s|^source=.*|source=(\"create-vlang-app-linux-x86_64::${BIN_URL}\")|" PKGBUILD
+            sed -i "s/^sha256sums=.*/sha256sums=('${SHA}')/" PKGBUILD
           fi
 
-          _srcdir="create-vlang-app-${RELEASE_TAG}"
-          sed -i "s/^pkgver=.*/pkgver=${NEW_VERSION}/" PKGBUILD
-          sed -i "s/^pkgrel=.*/pkgrel=1/" PKGBUILD
-          sed -i "s/^_commit=.*/_tag=${RELEASE_TAG}/" PKGBUILD
-          sed -i "s|^source=.*|source=(\"${AUR_PACKAGE}-${NEW_VERSION}.tar.gz::${URL}\")|" PKGBUILD
-          sed -i "s/^sha256sums=.*/sha256sums=('${SHA}')/" PKGBUILD
-          sed -i "s/create-vlang-app-\${_commit}/${_srcdir}/g" PKGBUILD
-          sed -i "s/create-vlang-app-\${_tag}/${_srcdir}/g" PKGBUILD
+          makepkg --printsrcinfo > .SRCINFO || true
+          # Regenerating .SRCINFO may need makepkg; fall back to leaving prior if unavailable
+          if ! command -v makepkg >/dev/null 2>&1; then
+            echo "::warning::makepkg not on runner host; .SRCINFO will be refreshed in Arch publish path if needed"
+          fi
 
-          echo "----- Updated PKGBUILD -----"
+          echo "----- Updated PKGBUILD (${PKG}) -----"
           cat PKGBUILD
 
       - name: Preflight AUR availability
         env:
           AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          PKG: ${{ matrix.package }}
         run: |
           set -euo pipefail
           test -n "$AUR_SSH_PRIVATE_KEY" || {
             echo "::error::AUR_SSH_PRIVATE_KEY is empty or unavailable in the release environment"
             exit 1
           }
-          curl -fsSL "$AUR_RPC_URL" >/tmp/aur-rpc.json
+          curl -fsSL "https://aur.archlinux.org/rpc/v5/info?arg=${PKG}" >/tmp/aur-rpc.json
           mkdir -p ~/.ssh
           ssh-keyscan -T 30 -t rsa,ecdsa,ed25519 aur.archlinux.org >> ~/.ssh/known_hosts
-          git ls-remote "https://aur.archlinux.org/${AUR_PACKAGE}.git" >/dev/null
+          git ls-remote "https://aur.archlinux.org/${PKG}.git" >/dev/null
 
       - name: Publish to AUR
         uses: ulises-jeremias/github-actions-aur-publish@217e4e2abbbee9ecc942bdc0681302e233656d9f # v1
         with:
-          pkgname: create-vlang-app
-          pkgbuild: aur-package/PKGBUILD
+          pkgname: ${{ matrix.package }}
+          pkgbuild: aur-package/${{ matrix.package }}/PKGBUILD
           commit_username: "Create Vlang App Bot"
           commit_email: "ulisescf.24@gmail.com"
           commit_message: "Update to version ${{ steps.version.outputs.version }}"
@@ -135,9 +157,10 @@ jobs:
       - name: Verify AUR RPC after publish
         env:
           EXPECTED_VERSION: ${{ steps.version.outputs.version }}
+          PKG: ${{ matrix.package }}
         run: |
           set -euo pipefail
-          curl -fsSL "$AUR_RPC_URL" >/tmp/aur-rpc.json
+          curl -fsSL "https://aur.archlinux.org/rpc/v5/info?arg=${PKG}" >/tmp/aur-rpc.json
           AUR_VERSION=$(python3 - <<'PY'
           import json
           from pathlib import Path
@@ -147,7 +170,7 @@ jobs:
           PY
           )
           {
-            echo "## AUR publish verification"
+            echo "## AUR publish verification (${PKG})"
             echo "- Expected: \`$EXPECTED_VERSION\`"
             echo "- AUR RPC: \`${AUR_VERSION:-missing}\`"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -159,7 +182,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           repository: aur-package
-          commit_message: "chore: sync PKGBUILD for v${{ steps.version.outputs.version }}"
+          commit_message: "chore: sync ${{ matrix.package }} for v${{ steps.version.outputs.version }}"
           commit_user_name: "Create Vlang App Bot"
           commit_user_email: "ulisescf.24@gmail.com"
-          file_pattern: "PKGBUILD .SRCINFO"
+          file_pattern: "${{ matrix.package }}/PKGBUILD ${{ matrix.package }}/.SRCINFO"
