@@ -145,7 +145,7 @@ jobs:
           git ls-remote "https://aur.archlinux.org/${PKG}.git" >/dev/null
 
       - name: Publish to AUR
-        uses: ulises-jeremias/github-actions-aur-publish@217e4e2abbbee9ecc942bdc0681302e233656d9f # v1
+        uses: ulises-jeremias/github-actions-aur-publish@507f0dba7755bdc2ad351232405bd7e4cd4a4a67 # v1
         with:
           pkgname: ${{ matrix.package }}
           pkgbuild: aur-package/${{ matrix.package }}/PKGBUILD
