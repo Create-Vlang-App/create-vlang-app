@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: vlang/setup-v@a4ea49c5f4f6bf9b17289ae4de511fb5ffe7039a
+      - uses: vlang/setup-v@33d2de41d463594e5423a274fbecdfa252427bd1
         with:
           version-file: .v-version
       - name: Install module from git (VPM parity) and build CLI
