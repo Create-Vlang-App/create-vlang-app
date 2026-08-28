@@ -181,6 +181,29 @@ gh run list --workflow smoke-distribution.yml --repo Create-Vlang-App/create-vla
 Channel version mismatches emit warnings when downstream packages lag the latest GitHub
 Release; install/help failures must stay red.
 
+## Reproducing distribution smoke locally
+
+The smoke jobs exercise four channels. Each can be run by hand to triage a
+failure without waiting for the scheduled workflow (see
+[#192](https://github.com/Create-Vlang-App/create-vlang-app/issues/192)).
+
+| Job | Local equivalent |
+| --- | --- |
+| Homebrew tap | `brew tap Create-Vlang-App/tap && brew trust --formula create-vlang-app/tap/create-vlang-app && brew install create-vlang-app/tap/create-vlang-app` |
+| AUR | `rm -rf /tmp/cva && git clone https://aur.archlinux.org/create-vlang-app.git /tmp/cva && cd /tmp/cva && makepkg -si` |
+| `v install` / binary | `v install --git https://github.com/Create-Vlang-App/create-vlang-app@main && v -prod modules/create-vlang-app` |
+| Docker Hub | `docker pull ghcr.io/create-vlang-app/create-vlang-app/server:latest` (or the released tag) and `docker run --rm <image> --help` |
+| `curl\|sh` installer | `curl -LsSf https://create-awesome-vlang-app.vercel.app/install.sh \| sh` |
+
+Notes:
+
+- Homebrew 4.6+ refuses untrusted third-party taps until `brew trust` is run.
+- AUR: remove a stale `/tmp/cva` first — `git clone` into a non-empty dir
+  fails silently under `2>/dev/null`, leaving no `PKGBUILD`.
+- `v install --git` installs VPM **modules**, not the CLI binary; build the
+  executable from the cloned source as shown above.
+- Docker pull needs the image to be published and public (or CI credentials).
+
 ## After secrets are in place
 
 Every subsequent release only requires tagging `create-vlang-app@X.Y.Z`.
