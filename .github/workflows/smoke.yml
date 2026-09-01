@@ -17,7 +17,7 @@ jobs:
     if: github.event_name != 'pull_request' || github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v7
-      - uses: vlang/setup-v@16bc9c7c00276f9e5e60f6e53ace2374ff9b59b9
+      - uses: vlang/setup-v@ca32bbeff247e0bbca76934c87cd879353a32bd5
         with:
           version-file: .v-version
           cache: true
@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: vlang/setup-v@16bc9c7c00276f9e5e60f6e53ace2374ff9b59b9
+      - uses: vlang/setup-v@ca32bbeff247e0bbca76934c87cd879353a32bd5
         with:
           version-file: .v-version
           cache: true
