@@ -83,7 +83,7 @@ jobs:
             optional: true
     steps:
       - uses: actions/checkout@v7
-      - uses: vlang/setup-v@ca32bbeff247e0bbca76934c87cd879353a32bd5
+      - uses: vlang/setup-v@38b2d397b94c03f5829c8dfe77426d2a5ad2fa5a
         with:
           version-file: .v-version
           cache: true
