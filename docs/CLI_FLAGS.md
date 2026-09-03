@@ -13,7 +13,7 @@
 | `--no-interactive` / `--force` / `--no-install` | CI-friendly defaults |
 | `cache dir\|list\|clean\|verify\|outdated\|update\|doctor` | Cache management |
 
-# Examples
+## Examples
 
 Install via `install.sh`:
 
