@@ -21,8 +21,9 @@ jobs:
   verify:
     name: Verify version alignment
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
-      - uses: actions/checkout@v7
       - name: Resolve tag
         id: tag
         run: |
@@ -37,6 +38,19 @@ jobs:
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=${TAG#create-vlang-app@}" >> "$GITHUB_OUTPUT"
+      # Pin the checkout to the resolved tag so a workflow_dispatch from any
+      # ref still builds exactly the tagged source (issue #241 backfill).
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.tag.outputs.tag }}
+      - name: Validate backfill release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          gh release view "${TAG}" --json tagName --jq .tagName
       - name: Check semver sync
         env:
           TAG: ${{ steps.tag.outputs.tag }}
@@ -83,6 +97,8 @@ jobs:
             optional: true
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.verify.outputs.tag }}
       - uses: vlang/setup-v@2af0f76cef8d32cea291b7ee9a259c37336a6441
         with:
           version-file: .v-version
