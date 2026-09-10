@@ -139,6 +139,12 @@ fn main() {
 			sets << os.args[i + 1]
 		}
 	}
+	for s in sets {
+		if !s.contains('=') || s.all_before('=') == '' {
+			eprintln("invalid --set '${s}': expected key=value")
+			exit(2)
+		}
+	}
 	_ = verbose
 
 	mut project_dir := project
