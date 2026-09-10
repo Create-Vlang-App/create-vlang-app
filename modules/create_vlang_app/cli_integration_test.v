@@ -1,5 +1,6 @@
 module main
 
+import json
 import os
 
 fn test_help_and_version_smoke() {
@@ -61,4 +62,31 @@ fn test_help_shows_examples() {
 	assert h.output.contains('--template web-server --addons github-setup')
 	assert h.output.contains('create-awesome-vlang-app my-app')
 	assert h.output.contains('install.sh')
+}
+
+fn test_list_json_output() {
+	repo := os.dir(os.dir(os.dir(@FILE)))
+	bin := os.join_path(repo, 'create-vlang-app')
+	t := os.execute('"${bin}" --list-templates --json --fixture --no-interactive')
+	assert t.exit_code == 0, t.output
+	templates := json.decode([]string, t.output.trim_space()) or {
+		assert false, 'templates output is not a JSON array: ${t.output}'
+		return
+	}
+	assert 'minimal' in templates
+	a := os.execute('"${bin}" --list-addons --json --fixture --no-interactive')
+	assert a.exit_code == 0, a.output
+	addons := json.decode([]string, a.output.trim_space()) or {
+		assert false, 'addons output is not a JSON array: ${a.output}'
+		return
+	}
+	assert 'github-setup' in addons
+	b := os.execute('"${bin}" --list-templates --list-addons --json --fixture --no-interactive')
+	assert b.exit_code == 0, b.output
+	both := json.decode(map[string][]string, b.output.trim_space()) or {
+		assert false, 'combined output is not a JSON object: ${b.output}'
+		return
+	}
+	assert 'minimal' in both['templates']
+	assert 'github-setup' in both['addons']
 }
