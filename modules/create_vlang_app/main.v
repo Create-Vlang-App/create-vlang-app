@@ -158,6 +158,13 @@ fn main() {
 
 	core.warn_if_outdated(app_version)
 
+	if !no_install && !skip_install {
+		core.verify_v_toolchain() or {
+			eprintln(err)
+			exit(1)
+		}
+	}
+
 	mut cache := core.default_cache_options()
 	if cache_dir != '' {
 		cache = core.CacheOptions{
