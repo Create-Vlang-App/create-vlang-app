@@ -126,3 +126,32 @@ fn test_v_version_check_missing_toolchain() {
 	assert required != ''
 	assert res.output.contains(required)
 }
+
+fn test_set_overrides_happy_path() {
+	repo := os.dir(os.dir(os.dir(@FILE)))
+	bin := os.join_path(repo, 'create-vlang-app')
+	src := os.join_path(repo, 'modules/create_vlang_app_core/testdata/layers/base')
+	dst := os.join_path(os.temp_dir(), 'cva-cli-int-set')
+	os.rmdir_all(dst) or {}
+	res :=
+		os.execute('"${bin}" "${dst}" --template file://${src} --no-interactive --force --no-install --set theme=dark --set title=hello')
+	assert res.exit_code == 0, res.output
+	cfg := os.read_file(os.join_path(dst, 'cva.config.json')) or {
+		assert false, 'cva.config.json not written'
+		return
+	}
+	assert cfg.contains('"theme": "dark"')
+	assert cfg.contains('"title": "hello"')
+}
+
+fn test_set_override_malformed_errors() {
+	repo := os.dir(os.dir(os.dir(@FILE)))
+	bin := os.join_path(repo, 'create-vlang-app')
+	src := os.join_path(repo, 'modules/create_vlang_app_core/testdata/layers/base')
+	dst := os.join_path(os.temp_dir(), 'cva-cli-int-set-bad')
+	os.rmdir_all(dst) or {}
+	res :=
+		os.execute('"${bin}" "${dst}" --template file://${src} --no-interactive --force --no-install --set novalue')
+	assert res.exit_code == 2, res.output
+	assert res.output.contains('invalid --set')
+}
