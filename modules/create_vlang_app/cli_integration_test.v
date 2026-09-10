@@ -51,3 +51,14 @@ fn test_skip_install_alias() {
 	assert res.exit_code == 0, res.output
 	assert os.exists(os.join_path(dst, 'v.mod'))
 }
+
+fn test_help_shows_examples() {
+	repo := os.dir(os.dir(os.dir(@FILE)))
+	bin := os.join_path(repo, 'create-vlang-app')
+	h := os.execute('"${bin}" --help')
+	assert h.exit_code == 0
+	assert h.output.contains('Examples:')
+	assert h.output.contains('--template web-server --addons github-setup')
+	assert h.output.contains('create-awesome-vlang-app my-app')
+	assert h.output.contains('install.sh')
+}
