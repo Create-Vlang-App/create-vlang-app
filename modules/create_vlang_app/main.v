@@ -39,7 +39,7 @@ fn main() {
 	use_fixture := fp.bool('fixture', 0, false, 'use local fixtures/catalog templates.json')
 	fixture_dir := fp.string('fixture-dir', 0, '', 'fixture catalog directory (implies --fixture)')
 	add_completion := fp.string('add-completion', 0, '', 'print completion script: bash|zsh|fish')
-	as_json := fp.bool('json', 0, false, 'JSON output for cache subcommands')
+	as_json := fp.bool('json', 0, false, 'JSON output for cache subcommands and catalog lists')
 
 	additional := fp.finalize() or {
 		eprintln(err)
@@ -70,11 +70,24 @@ fn main() {
 			eprintln(err)
 			exit(1)
 		}
+		if as_json && list_templates && list_addons {
+			println('{"templates":' + json.encode(core.list_template_names(cat)) + ',"addons":' +
+				json.encode(core.list_addon_names(cat)) + '}')
+			return
+		}
 		if list_templates {
-			println(core.format_catalog_list('Templates', core.list_template_names(cat)))
+			if as_json {
+				println(json.encode(core.list_template_names(cat)))
+			} else {
+				println(core.format_catalog_list('Templates', core.list_template_names(cat)))
+			}
 		}
 		if list_addons {
-			println(core.format_catalog_list('Addons', core.list_addon_names(cat)))
+			if as_json {
+				println(json.encode(core.list_addon_names(cat)))
+			} else {
+				println(core.format_catalog_list('Addons', core.list_addon_names(cat)))
+			}
 		}
 		return
 	}
