@@ -89,10 +89,6 @@ jobs:
             asset: create-vlang-app-darwin-x86_64
             ext: ""
             optional: true
-            # Weekly V fails to bootstrap from source on Intel macOS
-            # (C.open signature conflict in vlib/os/filelock, issue #241),
-            # so this entry uses the stable toolchain instead.
-            v_stable: true
           - runner: windows-latest
             os: windows
             arch: amd64
@@ -104,14 +100,8 @@ jobs:
         with:
           ref: ${{ needs.verify.outputs.tag }}
       - uses: vlang/setup-v@2af0f76cef8d32cea291b7ee9a259c37336a6441
-        if: ${{ matrix.v_stable != true }}
         with:
           version-file: .v-version
-          cache: true
-      - uses: vlang/setup-v@2af0f76cef8d32cea291b7ee9a259c37336a6441
-        if: ${{ matrix.v_stable == true }}
-        with:
-          stable: true
           cache: true
       - name: Build binary
         shell: bash
