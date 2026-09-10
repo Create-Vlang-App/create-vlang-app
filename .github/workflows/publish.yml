@@ -21,8 +21,9 @@ jobs:
   verify:
     name: Verify version alignment
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
     steps:
-      - uses: actions/checkout@v7
       - name: Resolve tag
         id: tag
         run: |
@@ -37,6 +38,19 @@ jobs:
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=${TAG#create-vlang-app@}" >> "$GITHUB_OUTPUT"
+      # Pin the checkout to the resolved tag so a workflow_dispatch from any
+      # ref still builds exactly the tagged source (issue #241 backfill).
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.tag.outputs.tag }}
+      - name: Validate backfill release
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.tag.outputs.tag }}
+        run: |
+          set -euo pipefail
+          gh release view "${TAG}" --json tagName --jq .tagName
       - name: Check semver sync
         env:
           TAG: ${{ steps.tag.outputs.tag }}
@@ -83,6 +97,8 @@ jobs:
             optional: true
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.verify.outputs.tag }}
       - uses: vlang/setup-v@2af0f76cef8d32cea291b7ee9a259c37336a6441
         with:
           version-file: .v-version
@@ -109,7 +125,7 @@ jobs:
   release:
     name: Upload GitHub Release assets
     needs: build
-    if: always() && startsWith(github.ref, 'refs/tags/')
+    if: always() && (startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -117,6 +133,37 @@ jobs:
         with:
           path: dist
           merge-multiple: true
+      - name: Merge existing release assets (workflow_dispatch backfill)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.event.inputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ -z "${TAG}" ]; then
+            echo "::error::tag input is required for release backfill" >&2
+            exit 1
+          fi
+          gh release view "${TAG}" --json assets --jq '.assets[].name' | sort -u > released.txt
+          echo "Assets already in ${TAG}:"
+          cat released.txt
+          tmp="$(mktemp -d)"
+          trap 'rm -rf "${tmp}"' EXIT
+          gh release download "${TAG}" -D "${tmp}"
+          shopt -s nullglob
+          : > backfill-new.txt
+          for f in dist/create-vlang-app-*; do
+            base="$(basename "${f}")"
+            grep -qxF "${base}" released.txt || echo "${base}" >> backfill-new.txt
+          done
+          # Released bytes are authoritative: overlay them so checksums below
+          # always describe exactly what the release stores. Fresh builds
+          # survive only for assets missing from the release.
+          for f in "${tmp}"/*; do
+            cp -f "${f}" "dist/$(basename "${f}")"
+          done
+          echo "New assets to backfill:"
+          cat backfill-new.txt
       - name: Write checksums
         working-directory: dist
         run: |
@@ -129,7 +176,18 @@ jobs:
           fi
           sha256sum "${files[@]}" > SHA256SUMS
           cat SHA256SUMS
+      - name: Stage backfill upload set (workflow_dispatch backfill)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          set -euo pipefail
+          mkdir -p upload
+          while IFS= read -r base; do
+            if [ -n "${base}" ]; then cp "dist/${base}" upload/; fi
+          done < backfill-new.txt
+          cp dist/SHA256SUMS upload/
+          ls -la upload/
       - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v3
         with:
           files: |
@@ -137,3 +195,12 @@ jobs:
             dist/SHA256SUMS
           generate_release_notes: true
           fail_on_unmatched_files: false
+      - name: Backfill missing assets (workflow_dispatch backfill)
+        if: github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          files: |
+            upload/*
+          generate_release_notes: false
+          fail_on_unmatched_files: true
