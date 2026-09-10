@@ -7,6 +7,7 @@
 | `--fixture` | Use `fixtures/catalog/templates.json` |
 | `--fixture-dir` | Custom fixture catalog directory |
 | `--catalog-path` / `--catalog-url` | Catalog overrides |
+| `--category` | Filter `--list-templates` by category slug (matches entry tags) |
 | `--json` | JSON for cache subcommands and catalog lists |
 | `--add-completion` | Emit bash/zsh/fish completion |
 | `--set key=value` | Write overlay into `cva.config.json` |

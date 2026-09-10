@@ -168,6 +168,19 @@ pub fn list_addon_names(catalog CatalogFile) []string {
 	return names
 }
 
+// list_template_names_in_category returns template names whose tags contain
+// the given category slug. Category linkage is tag-based: upstream catalog
+// categories (e.g. `web`) appear as entry tags.
+pub fn list_template_names_in_category(catalog CatalogFile, category string) []string {
+	mut names := []string{}
+	for t in catalog.templates {
+		if category in t.tags {
+			names << t.name
+		}
+	}
+	return names
+}
+
 pub fn format_catalog_list(title string, names []string) string {
 	mut lines := ['${title}:']
 	if names.len == 0 {
