@@ -36,3 +36,18 @@ fn test_scaffold_via_slug() {
 	assert os.exists(os.join_path(dst, 'v.mod'))
 	assert os.exists(os.join_path(dst, 'src/addon.v'))
 }
+
+fn test_skip_install_alias() {
+	repo := os.dir(os.dir(os.dir(@FILE)))
+	bin := os.join_path(repo, 'create-vlang-app')
+	h := os.execute('"${bin}" --help')
+	assert h.exit_code == 0
+	assert h.output.contains('--skip-install')
+	src := os.join_path(repo, 'modules/create_vlang_app_core/testdata/layers/base')
+	dst := os.join_path(os.temp_dir(), 'cva-cli-int-skip-install')
+	os.rmdir_all(dst) or {}
+	res :=
+		os.execute('"${bin}" "${dst}" --template file://${src} --no-interactive --force --skip-install')
+	assert res.exit_code == 0, res.output
+	assert os.exists(os.join_path(dst, 'v.mod'))
+}

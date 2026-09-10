@@ -10,7 +10,7 @@
 | `--json` | JSON for cache subcommands |
 | `--add-completion` | Emit bash/zsh/fish completion |
 | `--set key=value` | Write overlay into `cva.config.json` |
-| `--no-interactive` / `--force` / `--no-install` | CI-friendly defaults |
+| `--no-interactive` / `--force` / `--no-install` (`--skip-install` alias) | CI-friendly defaults |
 | `cache dir\|list\|clean\|verify\|outdated\|update\|doctor` | Cache management |
 
 ## Examples

@@ -3,7 +3,7 @@ _arguments \
   '--help' '--version' '--info' \
   '--template[template spec]:spec:' \
   '--addons[addons]:spec:' \
-  '--force' '--no-install' '--no-interactive' \
+  '--force' '--no-install' '--skip-install' '--no-interactive' \
   '--list-templates' '--list-addons' \
   '--catalog-path[path]:file:_files' \
   '--catalog-url[url]:url:' \
