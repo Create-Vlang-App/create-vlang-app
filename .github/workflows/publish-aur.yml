@@ -120,10 +120,13 @@ jobs:
             sed -i "s/^sha256sums=.*/sha256sums=('${SHA}')/" PKGBUILD
           fi
 
-          makepkg --printsrcinfo > .SRCINFO || true
-          # Regenerating .SRCINFO may need makepkg; fall back to leaving prior if unavailable
-          if ! command -v makepkg >/dev/null 2>&1; then
-            echo "::warning::makepkg not on runner host; .SRCINFO will be refreshed in Arch publish path if needed"
+          # Only overwrite .SRCINFO when makepkg succeeds: a bare redirect would
+          # truncate the file before a missing makepkg fails, syncing an empty
+          # .SRCINFO to the mirror (breaks AUR validation).
+          if command -v makepkg >/dev/null 2>&1; then
+            makepkg --printsrcinfo > .SRCINFO
+          else
+            echo "::warning::makepkg not on runner host; keeping prior .SRCINFO (mirror sync may lag until regenerated where makepkg exists)"
           fi
 
           echo "----- Updated PKGBUILD (${PKG}) -----"
