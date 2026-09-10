@@ -189,11 +189,11 @@ failure without waiting for the scheduled workflow (see
 
 | Job | Local equivalent |
 | --- | --- |
-| Homebrew tap | `brew tap Create-Vlang-App/tap && brew trust --formula create-vlang-app/tap/create-vlang-app && brew install create-vlang-app/tap/create-vlang-app` |
-| AUR | `rm -rf /tmp/cva && git clone https://aur.archlinux.org/create-vlang-app.git /tmp/cva && cd /tmp/cva && makepkg -si` |
+| Homebrew tap | `brew tap Create-Vlang-App/tap && brew trust Create-Vlang-App/tap && brew install create-vlang-app` |
+| AUR (`-bin`) | `git clone https://aur.archlinux.org/create-awesome-vlang-app-bin.git /tmp/cva && cd /tmp/cva && makepkg -si` (source variant: `create-awesome-vlang-app.git`) |
 | `v install` / binary | `v install --git https://github.com/Create-Vlang-App/create-vlang-app@main && v -prod modules/create-vlang-app` |
-| Docker Hub | `docker pull ghcr.io/create-vlang-app/create-vlang-app/server:latest` (or the released tag) and `docker run --rm <image> --help` |
-| `curl\|sh` installer | `curl -LsSf https://create-awesome-vlang-app.vercel.app/install.sh \| sh` |
+| Docker Hub | `docker pull ulisesjeremias/create-vlang-app:latest` and `docker run --rm ulisesjeremias/create-vlang-app:latest --help` |
+| curl/sh installer | `curl -fsSL https://create-awesome-vlang-app.vercel.app/install.sh \| sh` (dry-run: `CVA_DRY_RUN=1 sh scripts/install.sh`; pin: `CVA_RELEASE_TAG=create-vlang-app@0.1.0`) |
 
 Notes:
 
