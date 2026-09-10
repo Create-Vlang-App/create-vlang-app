@@ -11,7 +11,7 @@ fn main() {
 	mut fp := flag.new_flag_parser(os.args)
 	fp.application('create-vlang-app')
 	fp.version(app_version)
-	fp.description('Scaffold V projects from templates and extensions')
+	fp.description('Scaffold V projects from templates and extensions\nExamples:\n  create-vlang-app my-app --template web-server --addons github-setup --no-interactive\n  create-awesome-vlang-app my-app -t web-server -a github-setup --no-interactive\n  curl -fsSL https://create-awesome-vlang-app.vercel.app/install.sh | sh')
 	fp.skip_executable()
 
 	show_info := fp.bool('info', `i`, false, 'print environment info')
