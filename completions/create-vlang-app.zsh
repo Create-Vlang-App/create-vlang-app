@@ -4,7 +4,7 @@ _arguments \
   '--template[template spec]:spec:' \
   '--addons[addons]:spec:' \
   '--force' '--no-install' '--skip-install' '--no-interactive' \
-  '--list-templates' '--list-addons' \
+  '--list-templates' '--category[category]:slug:' '--list-addons' \
   '--catalog-path[path]:file:_files' \
   '--catalog-url[url]:url:' \
   '1:project dir:_files -/' \

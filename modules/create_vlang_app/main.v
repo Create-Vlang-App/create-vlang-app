@@ -27,6 +27,8 @@ fn main() {
 	no_interactive := fp.bool('no-interactive', 0, false, 'disable interactive prompts')
 	list_templates := fp.bool('list-templates', 0, false, 'list templates from catalog')
 	list_addons := fp.bool('list-addons', 0, false, 'list addons from catalog')
+	category := fp.string('category', 0, '',
+		'filter --list-templates by category slug (matches entry tags)')
 	offline := fp.bool('offline', 0, false, 'offline mode')
 	no_cache := fp.bool('no-cache', 0, false, 'bypass catalog cache')
 	cache_dir := fp.string('cache-dir', 0, '', 'override CVA_CACHE_DIR')
@@ -70,16 +72,24 @@ fn main() {
 			eprintln(err)
 			exit(1)
 		}
+		mut template_names := core.list_template_names(cat)
+		if list_templates && category != '' {
+			template_names = core.list_template_names_in_category(cat, category)
+			if template_names.len == 0 {
+				eprintln("no templates found for category '${category}'")
+				exit(1)
+			}
+		}
 		if as_json && list_templates && list_addons {
-			println('{"templates":' + json.encode(core.list_template_names(cat)) + ',"addons":' +
+			println('{"templates":' + json.encode(template_names) + ',"addons":' +
 				json.encode(core.list_addon_names(cat)) + '}')
 			return
 		}
 		if list_templates {
 			if as_json {
-				println(json.encode(core.list_template_names(cat)))
+				println(json.encode(template_names))
 			} else {
-				println(core.format_catalog_list('Templates', core.list_template_names(cat)))
+				println(core.format_catalog_list('Templates', template_names))
 			}
 		}
 		if list_addons {

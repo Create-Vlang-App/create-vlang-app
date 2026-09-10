@@ -31,3 +31,13 @@ fn test_unknown_slug() {
 	}
 	assert false
 }
+
+fn test_list_template_names_in_category() {
+	cat := load_catalog_file('testdata/templates.json') or {
+		assert false, err.str()
+		return
+	}
+	assert list_template_names_in_category(cat, 'web') == ['web-server']
+	assert list_template_names_in_category(cat, 'base') == ['minimal']
+	assert list_template_names_in_category(cat, 'nope') == []
+}

@@ -90,3 +90,22 @@ fn test_list_json_output() {
 	assert 'minimal' in both['templates']
 	assert 'github-setup' in both['addons']
 }
+
+fn test_list_templates_category_filter() {
+	repo := os.dir(os.dir(os.dir(@FILE)))
+	bin := os.join_path(repo, 'create-vlang-app')
+	ok := os.execute('"${bin}" --list-templates --category web --fixture --no-interactive')
+	assert ok.exit_code == 0, ok.output
+	assert ok.output.contains('web-server')
+	assert !ok.output.contains('minimal')
+	j := os.execute('"${bin}" --list-templates --category web --json --fixture --no-interactive')
+	assert j.exit_code == 0, j.output
+	filtered := json.decode([]string, j.output.trim_space()) or {
+		assert false, 'filtered output is not a JSON array: ${j.output}'
+		return
+	}
+	assert filtered == ['web-server']
+	bad := os.execute('"${bin}" --list-templates --category nope --fixture --no-interactive')
+	assert bad.exit_code == 1
+	assert bad.output.contains('no templates found')
+}
