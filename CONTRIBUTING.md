@@ -1,6 +1,6 @@
 # Contributing to create-vlang-app
 
-Thanks for contributing!
+Thanks for contributing! *Lee esto en [español](CONTRIBUTING.es.md).*
 
 ## Prerequisites
 

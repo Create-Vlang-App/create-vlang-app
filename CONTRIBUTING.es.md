@@ -1,6 +1,6 @@
 # Contribuyendo a create-vlang-app
 
-¡Gracias por contribuir!
+¡Gracias por contribuir! *Read this in [English](CONTRIBUTING.md).*
 
 ## Requisitos previos
 
