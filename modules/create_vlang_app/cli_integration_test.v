@@ -155,3 +155,50 @@ fn test_set_override_malformed_errors() {
 	assert res.exit_code == 2, res.output
 	assert res.output.contains('invalid --set')
 }
+
+fn test_config_path_overlay_precedence() {
+	repo := os.dir(os.dir(os.dir(@FILE)))
+	bin := os.join_path(repo, 'create-vlang-app')
+	src := os.join_path(repo, 'modules/create_vlang_app_core/testdata/layers/base')
+	cfg := os.join_path(os.temp_dir(), 'cva-cli-int-base.json')
+	os.write_file(cfg, '{"base":"keep","theme":"light","addons":["a"]}') or {}
+	dst := os.join_path(os.temp_dir(), 'cva-cli-int-config')
+	os.rmdir_all(dst) or {}
+	res :=
+		os.execute('"${bin}" "${dst}" --template file://${src} --no-interactive --force --no-install --config "${cfg}" --set theme=dark')
+	assert res.exit_code == 0, res.output
+	out := os.read_file(os.join_path(dst, 'cva.config.json')) or {
+		assert false, 'cva.config.json not written'
+		return
+	}
+	assert out.contains('"base"')
+	assert out.contains('"theme"')
+	assert out.contains('dark')
+	assert !out.contains('light')
+}
+
+fn test_config_path_missing_errors() {
+	repo := os.dir(os.dir(os.dir(@FILE)))
+	bin := os.join_path(repo, 'create-vlang-app')
+	src := os.join_path(repo, 'modules/create_vlang_app_core/testdata/layers/base')
+	dst := os.join_path(os.temp_dir(), 'cva-cli-int-config-bad')
+	os.rmdir_all(dst) or {}
+	res :=
+		os.execute('"${bin}" "${dst}" --template file://${src} --no-interactive --force --no-install --config /nonexistent-cva.json')
+	assert res.exit_code == 2, res.output
+	assert res.output.contains('config file not found')
+}
+
+fn test_config_path_invalid_json_errors() {
+	repo := os.dir(os.dir(os.dir(@FILE)))
+	bin := os.join_path(repo, 'create-vlang-app')
+	src := os.join_path(repo, 'modules/create_vlang_app_core/testdata/layers/base')
+	cfg := os.join_path(os.temp_dir(), 'cva-cli-int-bad.json')
+	os.write_file(cfg, 'not json') or {}
+	dst := os.join_path(os.temp_dir(), 'cva-cli-int-config-invalid')
+	os.rmdir_all(dst) or {}
+	res :=
+		os.execute('"${bin}" "${dst}" --template file://${src} --no-interactive --force --no-install --config "${cfg}"')
+	assert res.exit_code == 2, res.output
+	assert res.output.contains('invalid config file')
+}

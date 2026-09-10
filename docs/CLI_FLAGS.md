@@ -11,6 +11,9 @@
 | `--json` | JSON for cache subcommands and catalog lists |
 | `--add-completion` | Emit bash/zsh/fish completion |
 | `--set key=value` | Write overlay into `cva.config.json` |
+| `--config <path>` | Use custom `cva.config.json` as overlay base |
+
+Precedence, lowest to highest: template-shipped `cva.config.json` < `--config` file < `--set` overlays.
 | `--no-interactive` / `--force` / `--no-install` (`--skip-install` alias) | CI-friendly defaults |
 | `cache dir\|list\|clean\|verify\|outdated\|update\|doctor` | Cache management |
 

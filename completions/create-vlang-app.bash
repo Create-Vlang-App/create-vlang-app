@@ -1,7 +1,7 @@
 # bash completion for create-vlang-app
 _create_vlang_app() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
-  local opts="--help --version --info --template --addons --extend --force --no-install --skip-install --no-interactive --list-templates --category --list-addons --catalog-path --catalog-url --cache-dir --offline --verbose --fixture --fixture-dir --set --add-completion --json --no-color cache"
+  local opts="--help --version --info --template --addons --extend --force --no-install --skip-install --no-interactive --list-templates --category --list-addons --catalog-path --catalog-url --cache-dir --offline --verbose --fixture --fixture-dir --set --config --add-completion --json --no-color cache"
   local -a completions
   mapfile -t completions < <(compgen -W "${opts}" -- "${cur}")
   COMPREPLY=("${completions[@]}")
