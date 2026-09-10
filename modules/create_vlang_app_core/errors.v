@@ -27,6 +27,7 @@ pub const code_strict_repro = 'CVA_STRICT_REPRO'
 pub const code_path_resolve = 'CVA_PATH_RESOLVE'
 pub const code_git_cache = 'CVA_GIT_CACHE'
 pub const code_install = 'CVA_INSTALL'
+pub const code_v_toolchain = 'CVA_V_TOOLCHAIN'
 
 // abort_with prints the error and exits the process with code 1.
 pub fn abort_with(err CvaError) {

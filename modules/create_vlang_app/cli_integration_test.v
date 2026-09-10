@@ -109,3 +109,20 @@ fn test_list_templates_category_filter() {
 	assert bad.exit_code == 1
 	assert bad.output.contains('no templates found')
 }
+
+fn test_v_version_check_missing_toolchain() {
+	if os.user_os() == 'windows' {
+		return
+	}
+	repo := os.dir(os.dir(os.dir(@FILE)))
+	bin := os.join_path(repo, 'create-vlang-app')
+	dst := os.join_path(os.temp_dir(), 'cva-cli-int-vcheck')
+	os.rmdir_all(dst) or {}
+	res :=
+		os.execute('env PATH=/usr/bin:/bin "${bin}" "${dst}" --template minimal --fixture --no-interactive')
+	assert res.exit_code == 1, res.output
+	assert res.output.contains('V toolchain not found')
+	required := os.read_file(os.join_path(repo, '.v-version')) or { '' }.trim_space()
+	assert required != ''
+	assert res.output.contains(required)
+}
