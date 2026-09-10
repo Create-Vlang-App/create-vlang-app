@@ -79,3 +79,18 @@ configured) for the repository the workflow pulls from.
 `docker login` credentials in the workflow before pulling. See
 [#192](https://github.com/Create-Vlang-App/create-vlang-app/issues/192) for
 the current state of each channel.
+
+### curl|sh installer: download / checksum failures
+
+**Symptom:** The `curl|sh installer` job (or a local `curl ... | sh` run) fails with `failed to download ...`, `checksum mismatch ...`, `could not resolve a create-vlang-app@* release tag`, or `need curl or wget`.
+
+**Cause:** `scripts/install.sh` resolves the `create-vlang-app@*` release tag via the GitHub API, then downloads the `create-vlang-app-linux-<arch>` asset plus `SHA256SUMS`. Any link in that chain can break: API rate limits, a release without that platform asset (`Platform may be optional for this release`), a rotated checksum file, or a minimal runner without curl/wget.
+
+**Workaround:** Pin a known release explicitly, or dry-run first:
+
+```bash
+CVA_RELEASE_TAG=create-vlang-app@0.1.0 sh scripts/install.sh
+CVA_DRY_RUN=1 sh scripts/install.sh   # print actions only
+```
+
+Check the [Releases page](https://github.com/Create-Vlang-App/create-vlang-app/releases) for the asset list; macOS users should prefer the Homebrew tap, Arch users the AUR package.
