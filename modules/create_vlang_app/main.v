@@ -186,9 +186,16 @@ fn main() {
 		catalog_url:     catalog_url
 	}
 
+	spin := start_spinner('Scaffolding ${project_dir}', use_interactive)
 	core.scaffold(opts) or {
+		if s := spin {
+			s.stop()
+		}
 		eprintln(error_msg(err.str()))
 		exit(1)
+	}
+	if s := spin {
+		s.stop()
 	}
 	apply_sets(project_dir, sets)
 	println(success_msg(project_dir))
