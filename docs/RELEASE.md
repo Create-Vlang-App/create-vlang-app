@@ -16,7 +16,7 @@ git push origin create-vlang-app@0.2.0
 | `create-vlang-app-linux-x86_64` | **Required** — published on every `create-vlang-app@*` tag |
 | `create-vlang-app-linux-aarch64` | Shipped in 0.2.0+; `continue-on-error` when cross-build unavailable |
 | `create-vlang-app-darwin-aarch64` | Shipped in 0.2.0+; `continue-on-error` |
-| `create-vlang-app-darwin-x86_64` | Optional — requires `macos-15-intel` runner (fixed in #239, ships 0.2.1+) |
+| `create-vlang-app-darwin-x86_64` | Optional — pending the `macos-15-intel` runner fix in #239; expected in 0.2.1+ |
 | `create-vlang-app-windows-x86_64.exe` | Shipped in 0.2.0+; `continue-on-error` |
 | `SHA256SUMS` | **Required** — covers all uploaded assets for installer verification |
 
