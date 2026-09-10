@@ -22,6 +22,7 @@ fn main() {
 	set_flag := fp.string('set', 0, '', 'set key=value (repeatable via raw args)')
 	force := fp.bool('force', `f`, false, 'allow non-empty target directory / skip clean confirm')
 	no_install := fp.bool('no-install', 0, false, 'skip v install')
+	skip_install := fp.bool('skip-install', 0, false, 'skip v install (alias for --no-install)')
 	interactive := fp.bool('interactive', 0, true, 'interactive prompts')
 	no_interactive := fp.bool('no-interactive', 0, false, 'disable interactive prompts')
 	list_templates := fp.bool('list-templates', 0, false, 'list templates from catalog')
@@ -153,7 +154,7 @@ fn main() {
 		project_dir:     project_dir
 		template_spec:   tmpl
 		addon_specs:     addons
-		no_install:      no_install
+		no_install:      no_install || skip_install
 		force:           force
 		keep_on_failure: keep_on_failure
 		skip_git:        os.getenv('CVA_SKIP_GIT') == '1'
