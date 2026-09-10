@@ -7,5 +7,6 @@ _arguments \
   '--list-templates' '--category[category]:slug:' '--list-addons' \
   '--catalog-path[path]:file:_files' \
   '--catalog-url[url]:url:' \
+  '--config[path]:file:_files' \
   '1:project dir:_files -/' \
   'cache:cache cmd:(dir list clean verify outdated update doctor)'

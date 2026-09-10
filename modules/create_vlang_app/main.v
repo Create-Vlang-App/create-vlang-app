@@ -3,6 +3,7 @@ module main
 import os
 import flag
 import json
+import x.json2
 import create_vlang_app_core as core
 
 const app_version = '0.1.0'
@@ -20,6 +21,8 @@ fn main() {
 	addons_flag := fp.string('addons', `a`, '', 'comma-separated addon slugs or URLs')
 	_ := fp.string('extend', 0, '', 'alias for --addons (single value; prefer --addons)')
 	set_flag := fp.string('set', 0, '', 'set key=value (repeatable via raw args)')
+	config_path := fp.string('config', 0, '',
+		'use cva.config.json from a custom path (base for --set overlay)')
 	force := fp.bool('force', `f`, false, 'allow non-empty target directory / skip clean confirm')
 	no_install := fp.bool('no-install', 0, false, 'skip v install')
 	skip_install := fp.bool('skip-install', 0, false, 'skip v install (alias for --no-install)')
@@ -145,6 +148,17 @@ fn main() {
 			exit(2)
 		}
 	}
+	if config_path != '' {
+		if !os.exists(config_path) {
+			eprintln("config file not found: '${config_path}'")
+			exit(2)
+		}
+		raw_config := os.read_file(config_path) or { '' }
+		core.parse_cva_config(raw_config) or {
+			eprintln("invalid config file '${config_path}': ${err}")
+			exit(2)
+		}
+	}
 	_ = verbose
 
 	mut project_dir := project
@@ -210,6 +224,12 @@ fn main() {
 	if s := spin {
 		s.stop()
 	}
+	if config_path != '' {
+		os.cp(config_path, os.join_path(project_dir, 'cva.config.json')) or {
+			eprintln("cannot install config file '${config_path}': ${err}")
+			exit(1)
+		}
+	}
 	apply_sets(project_dir, sets)
 	println(success_msg(project_dir))
 }
@@ -237,12 +257,16 @@ fn apply_sets(project_dir string, sets []string) {
 		return
 	}
 	cfg_path := os.join_path(project_dir, 'cva.config.json')
-	mut data := map[string]string{}
-	if os.exists(cfg_path) {
-		raw := os.read_file(cfg_path) or { '{}' }
-		// lightweight: store overlay keys in a simple JSON object as strings
-		_ = raw
+	if !os.exists(cfg_path) {
+		write_sets_object(cfg_path, sets)
+		return
 	}
+	raw := os.read_file(cfg_path) or { '{}' }
+	os.write_file(cfg_path, merge_sets_into_json(raw, sets)) or {}
+}
+
+fn write_sets_object(cfg_path string, sets []string) {
+	mut data := map[string]string{}
 	for item in sets {
 		if !item.contains('=') {
 			continue
@@ -259,6 +283,27 @@ fn apply_sets(project_dir string, sets []string) {
 	}
 	lines << '}'
 	os.write_file(cfg_path, lines.join('\n') + '\n') or {}
+}
+
+// merge_sets_into_json overlays key=value pairs onto an existing JSON
+// object, preserving all other content. Invalid or non-object bases are
+// replaced by the overlay object.
+fn merge_sets_into_json(raw string, sets []string) string {
+	mut m := map[string]json2.Any{}
+	trimmed := raw.trim_space()
+	if trimmed != '' {
+		decoded := json2.decode[json2.Any](trimmed) or { json2.Any(map[string]json2.Any{}) }
+		if decoded is map[string]json2.Any {
+			m = decoded.clone()
+		}
+	}
+	for item in sets {
+		if !item.contains('=') {
+			continue
+		}
+		m[item.all_before('=')] = json2.Any(item.all_after('='))
+	}
+	return json2.encode(m, prettify: true) + '\n'
 }
 
 fn prompt_styled(label string) string {
