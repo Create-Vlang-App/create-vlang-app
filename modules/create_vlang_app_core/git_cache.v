@@ -85,8 +85,7 @@ fn clone_repo(url string, dest string, ref_name string) ! {
 				// do not leave a wrong-ref clone behind: it would be
 				// treated as a valid cache entry on the next call
 				os.rmdir_all(dest) or {}
-				return error(new_error(code_git_cache,
-					'git checkout failed for ref ${ref_name}: ${co.output}').msg())
+				return error(new_error(code_git_cache, 'git checkout failed for ref ${ref_name}: ${co.output}').msg())
 			}
 		}
 	}

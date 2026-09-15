@@ -45,7 +45,8 @@ jobs:
       - uses: actions/checkout@v7
       - uses: vlang/setup-v@2af0f76cef8d32cea291b7ee9a259c37336a6441
         with:
-          version-file: .v-version
+          version: master
+          check-latest: true
       - name: Install module from git (VPM parity) and build CLI
         run: |
           set -euo pipefail

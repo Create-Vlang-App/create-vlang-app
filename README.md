@@ -11,7 +11,7 @@ One command. Any V stack.
 [![CI Tests](https://github.com/Create-Vlang-App/create-vlang-app/actions/workflows/test.yml/badge.svg)](https://github.com/Create-Vlang-App/create-vlang-app/actions/workflows/test.yml)
 [![Lint](https://github.com/Create-Vlang-App/create-vlang-app/actions/workflows/lint.yml/badge.svg)](https://github.com/Create-Vlang-App/create-vlang-app/actions/workflows/lint.yml)
 [![Release](https://img.shields.io/github/v/release/Create-Vlang-App/create-vlang-app?filter=create-vlang-app%40*&style=flat-square&label=Release)](https://github.com/Create-Vlang-App/create-vlang-app/releases/tag/create-vlang-app%400.1.0)
-[![V](https://img.shields.io/badge/V-0.5.2-4B6EAF?style=flat-square)](https://vlang.io)
+[![V](https://img.shields.io/badge/V-master-4B6EAF?style=flat-square)](https://github.com/vlang/v/tree/master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 [![Website](https://img.shields.io/badge/site-create--awesome--vlang--app.vercel.app-8B5CF6?style=flat-square)](https://create-awesome-vlang-app.vercel.app)
 [![AUR](https://img.shields.io/aur/version/create-vlang-app?style=flat-square&label=AUR&logo=archlinux)](https://aur.archlinux.org/packages/create-vlang-app)
@@ -66,7 +66,7 @@ Also available via [Homebrew](https://github.com/Create-Vlang-App/homebrew-tap) 
 
 ### Build from source
 
-Requires [V](https://vlang.io) (pinned in [`.v-version`](.v-version)):
+Requires the latest [V](https://github.com/vlang/v/tree/master) (`master` branch — no pinned version):
 
 ```bash
 git clone https://github.com/Create-Vlang-App/create-vlang-app.git
@@ -128,7 +128,7 @@ make vet
 make build
 ```
 
-CI uses [`vlang/setup-v`](https://github.com/vlang/setup-v) with `version-file: .v-version`.
+CI uses [`vlang/setup-v`](https://github.com/vlang/setup-v) with `version: master` + `check-latest: true`, always resolving the newest `master` commit.
 
 ## License
 

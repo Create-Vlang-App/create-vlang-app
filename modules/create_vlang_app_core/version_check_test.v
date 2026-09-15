@@ -18,11 +18,13 @@ fn test_parse_v_version() {
 	}
 }
 
-fn test_verify_v_toolchain_matches_or_reports() {
+fn test_verify_v_toolchain_accepts_any_detected() {
 	det := verify_v_toolchain() or {
+		// No `v` on PATH (or unparseable output): must still carry the
+		// toolchain error code so callers can match on it.
 		assert err.str().contains('CVA_V_TOOLCHAIN')
-		assert err.str().contains(required_v_version)
 		return
 	}
-	assert det == required_v_version
+	// Any detected version is accepted — CVA tracks V master, no pin.
+	assert det.count('.') == 2
 }

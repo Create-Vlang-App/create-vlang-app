@@ -1,6 +1,6 @@
 module create_vlang_app_core
 
-import json
+import json2
 import net.http
 import os
 
@@ -20,7 +20,7 @@ pub:
 }
 
 pub fn load_catalog_json(raw string) !CatalogFile {
-	return json.decode(CatalogFile, raw) or { return error('invalid catalog JSON: ${err}') }
+	return json2.decode[CatalogFile](raw) or { return error('invalid catalog JSON: ${err}') }
 }
 
 pub fn load_catalog_file(path string) !CatalogFile {

@@ -101,7 +101,8 @@ jobs:
           ref: ${{ needs.verify.outputs.tag }}
       - uses: vlang/setup-v@2af0f76cef8d32cea291b7ee9a259c37336a6441
         with:
-          version-file: .v-version
+          version: master
+          check-latest: true
           cache: true
       - name: Build binary
         shell: bash
