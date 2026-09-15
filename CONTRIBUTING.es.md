@@ -4,7 +4,7 @@
 
 ## Requisitos previos
 
-- [V](https://vlang.io) que coincida con [`.v-version`](.v-version) (`v version`)
+- La última versión de [V](https://github.com/vlang/v/tree/master) de la rama `master` (comprueba con `v version`)
 - `make`, `git`
 - Opcional: `pre-commit` (`pre-commit install`)
 

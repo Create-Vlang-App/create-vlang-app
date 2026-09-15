@@ -23,11 +23,11 @@ pub fn check_latest_release(owner string, repo string) string {
 	return val[1..end]
 }
 
-// required_v_version mirrors the repo .v-version: the V toolchain release
-// scaffolded projects are built and tested against.
-pub const required_v_version = '0.5.2'
-
 pub const v_install_docs = 'https://create-awesome-vlang-app.vercel.app/docs/installation'
+
+// v_upstream tracks the V toolchain policy: CVA always builds and tests
+// against the latest master of vlang/v — there is no pinned compiler.
+pub const v_upstream = 'https://github.com/vlang/v/tree/master'
 
 // parse_v_version extracts X.Y.Z from `v version` output (`V 0.5.2 7647ce1`).
 pub fn parse_v_version(output string) !string {
@@ -43,25 +43,21 @@ pub fn parse_v_version(output string) !string {
 pub fn detected_v_version() !string {
 	if !os.exists_in_system_path('v') {
 		return error(new_error(code_v_toolchain,
-			'V toolchain not found in PATH (required ${required_v_version}). Install V ${required_v_version}: ${v_install_docs}').msg())
+			'V toolchain not found in PATH. Install the latest V (${v_upstream}): ${v_install_docs}').msg())
 	}
 	res := os.execute('v version')
 	if res.exit_code != 0 {
 		return error(new_error(code_v_toolchain,
-			'could not run `v version` (required ${required_v_version}): ${res.output.trim_space()}. See ${v_install_docs}').msg())
+			'could not run `v version`: ${res.output.trim_space()}. See ${v_install_docs}').msg())
 	}
 	return parse_v_version(res.output)
 }
 
-// verify_v_toolchain errors when the installed V toolchain does not match
-// the required version, printing required vs detected plus install docs.
+// verify_v_toolchain errors when no usable V toolchain is installed and
+// returns the detected version otherwise. Any detected version is accepted:
+// CVA tracks the latest V master, so the gate checks presence — never a pin.
 pub fn verify_v_toolchain() !string {
-	detected := detected_v_version()!
-	if detected != required_v_version {
-		return error(new_error(code_v_toolchain,
-			'unsupported V version: detected ${detected}, required ${required_v_version}. Install V ${required_v_version}: ${v_install_docs}').msg())
-	}
-	return detected
+	return detected_v_version()
 }
 
 pub fn warn_if_outdated(current string) {

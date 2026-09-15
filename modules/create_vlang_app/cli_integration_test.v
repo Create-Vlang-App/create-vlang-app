@@ -122,9 +122,8 @@ fn test_v_version_check_missing_toolchain() {
 		os.execute('env PATH=/usr/bin:/bin "${bin}" "${dst}" --template minimal --fixture --no-interactive')
 	assert res.exit_code == 1, res.output
 	assert res.output.contains('V toolchain not found')
-	required := os.read_file(os.join_path(repo, '.v-version')) or { '' }.trim_space()
-	assert required != ''
-	assert res.output.contains(required)
+	// No pinned compiler: the error must point at upstream master + install docs.
+	assert res.output.contains('github.com/vlang/v')
 }
 
 fn test_set_overrides_happy_path() {

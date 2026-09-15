@@ -4,7 +4,7 @@ Thanks for contributing! *Lee esto en [español](CONTRIBUTING.es.md).*
 
 ## Prerequisites
 
-- [V](https://vlang.io) matching [`.v-version`](.v-version) (`v version`)
+- Latest [V](https://github.com/vlang/v/tree/master) from the `master` branch (check with `v version`)
 - `make`, `git`
 - Optional: `pre-commit` (`pre-commit install`)
 

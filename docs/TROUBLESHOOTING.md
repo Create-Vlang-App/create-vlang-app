@@ -6,7 +6,7 @@ Run via `make build` / `make test` so `.vmodules` is linked. See `Makefile` `ens
 
 ## Wrong V version
 
-Check `.v-version` and `v version`. Use `vlang/setup-v` with `version-file` in CI.
+CVA tracks the latest `master` of `vlang/v` — there is no pinned version. Compare `v version` with the newest `master` commit and rebuild V from `https://github.com/vlang/v/tree/master` when you lag behind. CI always resolves `master` via `vlang/setup-v` (`version: master`, `check-latest: true`).
 
 ## Cache / offline scaffolding
 
