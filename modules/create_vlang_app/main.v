@@ -21,8 +21,7 @@ fn main() {
 	addons_flag := fp.string('addons', `a`, '', 'comma-separated addon slugs or URLs')
 	_ := fp.string('extend', 0, '', 'alias for --addons (single value; prefer --addons)')
 	set_flag := fp.string('set', 0, '', 'set key=value (repeatable via raw args)')
-	config_path := fp.string('config', 0, '',
-		'use cva.config.json from a custom path (base for --set overlay)')
+	config_path := fp.string('config', 0, '', 'use cva.config.json from a custom path (base for --set overlay)')
 	force := fp.bool('force', `f`, false, 'allow non-empty target directory / skip clean confirm')
 	no_install := fp.bool('no-install', 0, false, 'skip v install')
 	skip_install := fp.bool('skip-install', 0, false, 'skip v install (alias for --no-install)')
@@ -30,8 +29,7 @@ fn main() {
 	no_interactive := fp.bool('no-interactive', 0, false, 'disable interactive prompts')
 	list_templates := fp.bool('list-templates', 0, false, 'list templates from catalog')
 	list_addons := fp.bool('list-addons', 0, false, 'list addons from catalog')
-	category := fp.string('category', 0, '',
-		'filter --list-templates by category slug (matches entry tags)')
+	category := fp.string('category', 0, '', 'filter --list-templates by category slug (matches entry tags)')
 	offline := fp.bool('offline', 0, false, 'offline mode')
 	no_cache := fp.bool('no-cache', 0, false, 'bypass catalog cache')
 	cache_dir := fp.string('cache-dir', 0, '', 'override CVA_CACHE_DIR')
@@ -84,8 +82,7 @@ fn main() {
 			}
 		}
 		if as_json && list_templates && list_addons {
-			println('{"templates":' + json.encode(template_names) + ',"addons":' +
-				json.encode(core.list_addon_names(cat)) + '}')
+			println('{"templates":' + json.encode(template_names) + ',"addons":' + json.encode(core.list_addon_names(cat)) + '}')
 			return
 		}
 		if list_templates {
@@ -377,7 +374,11 @@ fn run_cache_cmd(args []string, force bool, no_interactive bool, json_flag bool)
 			}
 		}
 		'list' {
-			entries := if os.is_dir(git_dir) { os.ls(git_dir) or { []string{} } } else { []string{} }
+			entries := if os.is_dir(git_dir) {
+				os.ls(git_dir) or { []string{} }
+			} else {
+				[]string{}
+			}
 			if as_json {
 				println(json.encode(entries))
 			} else if entries.len == 0 {
@@ -413,7 +414,11 @@ fn run_cache_cmd(args []string, force bool, no_interactive bool, json_flag bool)
 			}
 		}
 		'outdated' {
-			entries := if os.is_dir(git_dir) { os.ls(git_dir) or { []string{} } } else { []string{} }
+			entries := if os.is_dir(git_dir) {
+				os.ls(git_dir) or { []string{} }
+			} else {
+				[]string{}
+			}
 			if as_json {
 				println('{"outdated":' + json.encode(entries) + '}')
 			} else if entries.len == 0 {

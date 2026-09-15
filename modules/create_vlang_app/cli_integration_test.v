@@ -69,21 +69,21 @@ fn test_list_json_output() {
 	bin := os.join_path(repo, 'create-vlang-app')
 	t := os.execute('"${bin}" --list-templates --json --fixture --no-interactive')
 	assert t.exit_code == 0, t.output
-	templates := json.decode([]string, t.output.trim_space()) or {
+	templates := json.decode([]string{}, t.output.trim_space()) or {
 		assert false, 'templates output is not a JSON array: ${t.output}'
 		return
 	}
 	assert 'minimal' in templates
 	a := os.execute('"${bin}" --list-addons --json --fixture --no-interactive')
 	assert a.exit_code == 0, a.output
-	addons := json.decode([]string, a.output.trim_space()) or {
+	addons := json.decode([]string{}, a.output.trim_space()) or {
 		assert false, 'addons output is not a JSON array: ${a.output}'
 		return
 	}
 	assert 'github-setup' in addons
 	b := os.execute('"${bin}" --list-templates --list-addons --json --fixture --no-interactive')
 	assert b.exit_code == 0, b.output
-	both := json.decode(map[string][]string, b.output.trim_space()) or {
+	both := json.decode(map[string][]string{}, b.output.trim_space()) or {
 		assert false, 'combined output is not a JSON object: ${b.output}'
 		return
 	}
@@ -100,7 +100,7 @@ fn test_list_templates_category_filter() {
 	assert !ok.output.contains('minimal')
 	j := os.execute('"${bin}" --list-templates --category web --json --fixture --no-interactive')
 	assert j.exit_code == 0, j.output
-	filtered := json.decode([]string, j.output.trim_space()) or {
+	filtered := json.decode([]string{}, j.output.trim_space()) or {
 		assert false, 'filtered output is not a JSON array: ${j.output}'
 		return
 	}

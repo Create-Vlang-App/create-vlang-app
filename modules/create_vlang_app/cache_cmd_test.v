@@ -17,7 +17,7 @@ fn test_cache_cmds_empty_cache_json() {
 	assert v.output.contains('"ok":true')
 	o := os.execute('CVA_CACHE_DIR="${dir}" "${bin}" cache outdated --json --no-interactive')
 	assert o.exit_code == 0, o.output
-	outdated := json.decode(map[string][]string, o.output.trim_space()) or {
+	outdated := json.decode(map[string][]string{}, o.output.trim_space()) or {
 		assert false, 'outdated output is not JSON: ${o.output}'
 		return
 	}
