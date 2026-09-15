@@ -35,20 +35,17 @@ pub fn parse_v_version(output string) !string {
 	if parts.len >= 2 && parts[0] == 'V' && parts[1].count('.') == 2 {
 		return parts[1]
 	}
-	return error(new_error(code_v_toolchain,
-		'unexpected `v version` output: ${output.trim_space()}').msg())
+	return error(new_error(code_v_toolchain, 'unexpected `v version` output: ${output.trim_space()}').msg())
 }
 
 // detected_v_version returns the installed V toolchain version.
 pub fn detected_v_version() !string {
 	if !os.exists_in_system_path('v') {
-		return error(new_error(code_v_toolchain,
-			'V toolchain not found in PATH. Install the latest V (${v_upstream}): ${v_install_docs}').msg())
+		return error(new_error(code_v_toolchain, 'V toolchain not found in PATH. Install the latest V (${v_upstream}): ${v_install_docs}').msg())
 	}
 	res := os.execute('v version')
 	if res.exit_code != 0 {
-		return error(new_error(code_v_toolchain,
-			'could not run `v version`: ${res.output.trim_space()}. See ${v_install_docs}').msg())
+		return error(new_error(code_v_toolchain, 'could not run `v version`: ${res.output.trim_space()}. See ${v_install_docs}').msg())
 	}
 	return parse_v_version(res.output)
 }

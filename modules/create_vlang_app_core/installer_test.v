@@ -9,8 +9,7 @@ fn test_scaffold_from_file() {
 	os.rmdir_all(dst) or {}
 	os.mkdir_all(src) or {}
 	os.write_file(os.join_path(src, 'hello.txt'), 'world') or {}
-	os.write_file(os.join_path(src, 'v.mod'),
-		"Module {\n\tname: 'demo'\n\tversion: '0.0.1'\n\tdependencies: []\n}\n") or {}
+	os.write_file(os.join_path(src, 'v.mod'), "Module {\n\tname: 'demo'\n\tversion: '0.0.1'\n\tdependencies: []\n}\n") or {}
 	opts := ScaffoldOptions{
 		project_dir:   dst
 		template_spec: 'file://${src}'
