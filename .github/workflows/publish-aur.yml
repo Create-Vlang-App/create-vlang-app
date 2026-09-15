@@ -183,7 +183,27 @@ jobs:
             echo "::warning::AUR RPC has not reflected ${EXPECTED_VERSION} yet (current: ${AUR_VERSION:-missing})"
           fi
 
+      - name: Regenerate .SRCINFO for mirror sync
+        # The mirror CI requires .SRCINFO to match PKGBUILD exactly
+        # (same makepkg command the mirror validates with). AUR itself
+        # regenerates it on push, but the GitHub mirror does not.
+        working-directory: aur-package/${{ matrix.package }}
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v "$PWD:/work:rw" \
+            -w /work \
+            archlinux:latest \
+            bash -euo pipefail -c '
+              pacman -Sy --noconfirm --needed pacman-contrib base-devel >/dev/null 2>&1
+              useradd -m builder
+              chown -R builder:builder /work
+              runuser -u builder -- makepkg --printsrcinfo > .SRCINFO
+            '
+
       - name: Sync updated PKGBUILD to GitHub mirror
+        # Keep the aur-package GitHub mirror in sync with what's live
+        # on AUR (.SRCINFO regenerated above so the mirror CI stays green).
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           repository: aur-package
