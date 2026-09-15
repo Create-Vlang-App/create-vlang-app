@@ -4,7 +4,7 @@
 
 `v install create-vlang-app` after GitHub Release `create-vlang-app@X.Y.Z`.
 
-## Current status (0.1.0)
+## Current status (0.2.1)
 
 - **Primary install path (interim):** `curl|sh` via [`scripts/install.sh`](../scripts/install.sh) → GitHub Release binary (`create-vlang-app-linux-x86_64` + `SHA256SUMS`).
 - **Hero URL:** `https://create-awesome-vlang-app.vercel.app/install.sh`

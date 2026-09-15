@@ -6,7 +6,7 @@ import json
 import x.json2
 import create_vlang_app_core as core
 
-const app_version = '0.2.0'
+const app_version = '0.2.1'
 
 fn main() {
 	mut fp := flag.new_flag_parser(os.args)
