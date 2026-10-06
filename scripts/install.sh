@@ -23,6 +23,7 @@ INSTALL_DIR="${CVA_INSTALL_DIR:-${HOME}/.local/bin}"
 DRY_RUN="${CVA_DRY_RUN:-0}"
 GITHUB_API="${GITHUB_API:-https://api.github.com}"
 GITHUB_DOWNLOAD="${GITHUB_DOWNLOAD:-https://github.com}"
+GITHUB_RELEASES="${GITHUB_RELEASES:-https://github.com/${REPO}/releases}"
 
 info() { printf '%s\n' "$*" >&2; }
 die() { printf 'error: %s\n' "$*" >&2; exit 1; }
@@ -85,7 +86,24 @@ resolve_tag() {
 		printf 'create-vlang-app@%s\n' "$CVA_VERSION"
 		return
 	fi
-	# Prefer releases/latest when it is a CVA tag; otherwise scan recent releases.
+	# Prefer GitHub's latest-release redirect to avoid using the unauthenticated
+	# REST API quota for the default install path.
+	_latest_url=''
+	if command -v curl >/dev/null 2>&1; then
+		_latest_url=$(curl -fsSL -o /dev/null -w '%{url_effective}' "${GITHUB_RELEASES}/latest" 2>/dev/null || true)
+	elif command -v wget >/dev/null 2>&1; then
+		_latest_url=$(wget --server-response --max-redirect=0 -O /dev/null "${GITHUB_RELEASES}/latest" 2>&1 \
+			| sed -n 's/^[[:space:]]*Location: //p' | tail -n1 || true)
+	fi
+	_tag=$(printf '%s' "$_latest_url" | sed -n 's@.*/tag/@@p' | sed 's/%40/@/g')
+	case "$_tag" in
+	create-vlang-app@*)
+		printf '%s\n' "$_tag"
+		return
+		;;
+	esac
+	# Fallback for proxies that strip redirects or if the newest release is not
+	# a create-vlang-app tag.
 	_latest_json=$(http_get "${GITHUB_API}/repos/${REPO}/releases/latest" 2>/dev/null || true)
 	if [ -n "$_latest_json" ]; then
 		_tag=$(printf '%s' "$_latest_json" | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)
