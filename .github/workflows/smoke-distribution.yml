@@ -24,6 +24,10 @@ jobs:
   install-sh:
     name: curl|sh installer
     runs-on: ubuntu-latest
+    env:
+      # Ensure install.sh resolves the release from GitHub's redirect instead
+      # of depending on the unauthenticated REST API.
+      GITHUB_API: http://127.0.0.1:9
     steps:
       - uses: actions/checkout@v7
       - name: Install via scripts/install.sh
