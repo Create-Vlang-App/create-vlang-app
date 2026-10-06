@@ -88,7 +88,7 @@ jobs:
             arch: amd64
             asset: create-vlang-app-darwin-x86_64
             ext: ""
-            optional: true
+            optional: false
           - runner: windows-latest
             os: windows
             arch: amd64
