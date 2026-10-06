@@ -94,7 +94,7 @@ jobs:
             arch: amd64
             asset: create-vlang-app-windows-x86_64
             ext: .exe
-            optional: true
+            optional: false
     steps:
       - uses: actions/checkout@v7
         with:
