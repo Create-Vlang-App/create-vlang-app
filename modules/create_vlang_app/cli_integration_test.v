@@ -1,7 +1,7 @@
 module main
 
-import json
 import os
+import x.json2
 
 fn test_help_and_version_smoke() {
 	repo := os.dir(os.dir(os.dir(@FILE)))
@@ -69,21 +69,21 @@ fn test_list_json_output() {
 	bin := os.join_path(repo, 'create-vlang-app')
 	t := os.execute('"${bin}" --list-templates --json --fixture --no-interactive')
 	assert t.exit_code == 0, t.output
-	templates := json.decode([]string{}, t.output.trim_space()) or {
+	templates := json2.decode[[]string](t.output.trim_space(), json2.DecoderOptions{}) or {
 		assert false, 'templates output is not a JSON array: ${t.output}'
 		return
 	}
 	assert 'minimal' in templates
 	a := os.execute('"${bin}" --list-addons --json --fixture --no-interactive')
 	assert a.exit_code == 0, a.output
-	addons := json.decode([]string{}, a.output.trim_space()) or {
+	addons := json2.decode[[]string](a.output.trim_space(), json2.DecoderOptions{}) or {
 		assert false, 'addons output is not a JSON array: ${a.output}'
 		return
 	}
 	assert 'github-setup' in addons
 	b := os.execute('"${bin}" --list-templates --list-addons --json --fixture --no-interactive')
 	assert b.exit_code == 0, b.output
-	both := json.decode(map[string][]string{}, b.output.trim_space()) or {
+	both := json2.decode[map[string][]string](b.output.trim_space(), json2.DecoderOptions{}) or {
 		assert false, 'combined output is not a JSON object: ${b.output}'
 		return
 	}
@@ -100,7 +100,7 @@ fn test_list_templates_category_filter() {
 	assert !ok.output.contains('minimal')
 	j := os.execute('"${bin}" --list-templates --category web --json --fixture --no-interactive')
 	assert j.exit_code == 0, j.output
-	filtered := json.decode([]string{}, j.output.trim_space()) or {
+	filtered := json2.decode[[]string](j.output.trim_space(), json2.DecoderOptions{}) or {
 		assert false, 'filtered output is not a JSON array: ${j.output}'
 		return
 	}
