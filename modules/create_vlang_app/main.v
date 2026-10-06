@@ -2,7 +2,6 @@ module main
 
 import os
 import flag
-import json
 import x.json2
 import create_vlang_app_core as core
 
@@ -82,19 +81,19 @@ fn main() {
 			}
 		}
 		if as_json && list_templates && list_addons {
-			println('{"templates":' + json.encode(template_names) + ',"addons":' + json.encode(core.list_addon_names(cat)) + '}')
+			println('{"templates":' + json2.encode(template_names, json2.EncoderOptions{}) + ',"addons":' + json2.encode(core.list_addon_names(cat), json2.EncoderOptions{}) + '}')
 			return
 		}
 		if list_templates {
 			if as_json {
-				println(json.encode(template_names))
+				println(json2.encode(template_names, json2.EncoderOptions{}))
 			} else {
 				println(core.format_catalog_list('Templates', template_names))
 			}
 		}
 		if list_addons {
 			if as_json {
-				println(json.encode(core.list_addon_names(cat)))
+				println(json2.encode(core.list_addon_names(cat), json2.EncoderOptions{}))
 			} else {
 				println(core.format_catalog_list('Addons', core.list_addon_names(cat)))
 			}
@@ -380,7 +379,7 @@ fn run_cache_cmd(args []string, force bool, no_interactive bool, json_flag bool)
 				[]string{}
 			}
 			if as_json {
-				println(json.encode(entries))
+				println(json2.encode(entries, json2.EncoderOptions{}))
 			} else if entries.len == 0 {
 				println('(empty)')
 			} else {
@@ -420,7 +419,7 @@ fn run_cache_cmd(args []string, force bool, no_interactive bool, json_flag bool)
 				[]string{}
 			}
 			if as_json {
-				println('{"outdated":' + json.encode(entries) + '}')
+				println('{"outdated":' + json2.encode(entries, json2.EncoderOptions{}) + '}')
 			} else if entries.len == 0 {
 				println('(none)')
 			} else {
