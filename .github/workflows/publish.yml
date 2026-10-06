@@ -99,7 +99,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ needs.verify.outputs.tag }}
-      - uses: vlang/setup-v@11ee60e5aa8207d3488be3afdfdd590492494b7c
+      - uses: vlang/setup-v@f39f0937037ba37f04636f065002867f28c51cc8
         with:
           version: master
           check-latest: true
