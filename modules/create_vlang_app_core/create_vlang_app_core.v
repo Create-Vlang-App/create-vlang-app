@@ -1,7 +1,7 @@
 module create_vlang_app_core
 
 // version is the core library semver (keep in sync with v.mod).
-pub const version = '0.2.2'
+pub const version = '0.2.3'
 
 // hello returns a stub identity string used by smoke tests.
 pub fn hello() string {
