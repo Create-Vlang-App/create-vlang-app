@@ -1,7 +1,9 @@
 name: Notify Homebrew tap
 
 # Runs after Release succeeds, or manually. Dispatches to Create-Vlang-App/homebrew-tap
-# so update-formula can bump the formula once release tarballs exist.
+# so update-formula can bump the formula once release assets exist. The tap
+# token then opens the formula PR because the tap organization disables PR
+# creation by GITHUB_TOKEN.
 on:
   workflow_run:
     workflows: ["Release"]
@@ -77,3 +79,69 @@ jobs:
             /repos/Create-Vlang-App/homebrew-tap/dispatches \
             -f "event_type=new-release" \
             -f "client_payload[version]=$VERSION"
+
+      - name: Open Homebrew formula pull request
+        env:
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          REPO="Create-Vlang-App/homebrew-tap"
+          BRANCH="release/${VERSION}"
+          FORMULA="Formula/create-vlang-app.rb"
+          BRANCH_API="${BRANCH//\//%2F}"
+
+          CURRENT=$(gh api "repos/${REPO}/contents/${FORMULA}?ref=main" \
+            --jq '.content' | base64 -d \
+            | sed -n 's/^  version "\([0-9.]*\)"/\1/p' | head -1)
+          if [ "$CURRENT" = "$VERSION" ]; then
+            echo "Homebrew formula already at ${VERSION}; nothing to do"
+            exit 0
+          fi
+
+          if gh pr list --repo "$REPO" --head "$BRANCH" --state open \
+            --json number --jq -e '.[0].number' >/dev/null; then
+            echo "Homebrew formula PR already open for ${VERSION}; nothing to do"
+            exit 0
+          fi
+
+          delay=15
+          branch_ready=false
+          for attempt in 1 2 3 4 5; do
+            if gh api "repos/${REPO}/branches/${BRANCH_API}" --jq .name >/dev/null 2>&1; then
+              branch_ready=true
+              break
+            fi
+            echo "::warning::Formula branch not ready (attempt ${attempt}/5); retry in ${delay}s"
+            sleep "$delay"
+            delay=$((delay * 2))
+            if [ "$delay" -gt 60 ]; then delay=60; fi
+          done
+          if [ "$branch_ready" != true ]; then
+            echo "::error::Timed out waiting for ${REPO}:${BRANCH}"
+            exit 1
+          fi
+
+          cat > /tmp/homebrew-pr-body.md <<EOF
+          ## Description
+
+          Automated formula update to create-vlang-app ${VERSION}.
+
+          - Updates Apple Silicon and Intel release URLs and checksums.
+          - The Formula lint workflow verifies both binary assets and install paths.
+
+          ## Type of Change
+          - [x] Formula update
+
+          ## How Has This Been Tested?
+          - [x] Release assets and SHA-256 values resolved from the GitHub Release.
+          - [ ] Formula lint and installation tests on Apple Silicon and Intel.
+
+          ## Checklist
+          - [x] Self-review done
+          - [ ] Formula validated: brew audit --strict and brew style.
+          EOF
+          sed -i 's/^          //' /tmp/homebrew-pr-body.md
+          gh pr create --repo "$REPO" --base main --head "$BRANCH" \
+            --title "feat: update formula to ${VERSION}" \
+            --body-file /tmp/homebrew-pr-body.md
