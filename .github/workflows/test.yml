@@ -24,7 +24,6 @@ jobs:
       - uses: actions/checkout@v7
       - uses: vlang/setup-v@f39f0937037ba37f04636f065002867f28c51cc8
         with:
-          version: master
-          check-latest: true
+          version: 78869311b51c76ddb4c3d2ed17e8a7733d8d5979
       - name: Run tests
         run: make test
